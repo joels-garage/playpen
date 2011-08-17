@@ -4,7 +4,8 @@ import org.apache.commons.math.ode.DerivativeException;
 import org.apache.commons.math.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math.ode.FirstOrderIntegrator;
 import org.apache.commons.math.ode.IntegratorException;
-import org.apache.commons.math.ode.nonstiff.EulerIntegrator;
+import org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegrator;
+import org.apache.commons.math.ode.nonstiff.MidpointIntegrator;
 import org.apache.commons.math.ode.sampling.StepHandler;
 import org.apache.commons.math.ode.sampling.StepInterpolator;
 import org.apache.log4j.Logger;
@@ -109,17 +110,18 @@ public class DiffusiveMediumTest {
 
     @Test
     public void testStepSize() throws DerivativeException, IntegratorException {
-        final double step = 0.1;
-        FirstOrderIntegrator integ = new EulerIntegrator(step);
+        final double step = 0.2;
+        // FirstOrderIntegrator integ = new EulerIntegrator(step);
         // FirstOrderIntegrator integ = new MidpointIntegrator(step);
+        FirstOrderIntegrator integ = new ClassicalRungeKuttaIntegrator(step);
         StepHandler handler = new MyHandler(step);
 
         integ.addStepHandler(handler);
 
-        int dimension = 10;
+        int dimension = 15;
         double[] alpha = new double[dimension];
         for (int i = 0; i < dimension; ++i) {
-            alpha[i] = 1;
+            alpha[i] = 1.5;
         }
         FirstOrderDifferentialEquations eq = new MyEq(dimension, alpha);
         double t0 = 0;
@@ -132,6 +134,7 @@ public class DiffusiveMediumTest {
         double[] y1 = new double[dimension];
         integ.integrate(eq, t0, y0, t1, y1);
         // and then do it some more, with a new boundary value
+        // TODO: do i need to do it this way?
         y1[dimension - 1] = -1;
         double t2 = 40;
         double[] y2 = new double[dimension];
