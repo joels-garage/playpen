@@ -7,6 +7,6 @@
 	<classpathentry kind="lib" path="lib/prod/log4j-1.2.15.jar"/>
 	<classpathentry kind="lib" path="lib/test/junit-4.4.jar"/>
 	<classpathentry kind="lib" path="lib/prod/commons-math-2.2.jar" sourcepath="lib/info/commons-math-2.2-src/src/main/java"/>
-	<classpathentry kind="lib" path="lib/prod/jgrapht-jdk1.6.jar"/>
+	<classpathentry kind="lib" path="lib/prod/jgrapht-jdk1.6.jar" sourcepath="lib/info/jgrapht-0.8.2/src"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -4,8 +4,8 @@ import org.apache.commons.math.ode.DerivativeException;
 import org.apache.commons.math.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math.ode.FirstOrderIntegrator;
 import org.apache.commons.math.ode.IntegratorException;
-import org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegrator;
-import org.apache.commons.math.ode.nonstiff.MidpointIntegrator;
+import org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegrator;
+import org.apache.commons.math.ode.nonstiff.EulerIntegrator;
 import org.apache.commons.math.ode.sampling.StepHandler;
 import org.apache.commons.math.ode.sampling.StepInterpolator;
 import org.apache.log4j.Logger;
@@ -14,13 +14,17 @@ import org.junit.Test;
 
 import util.Util;
 
+/*
+ * TODO: replace the ODE solver thing with a direct method; there's no special
+ * value to it, i can just use the finite difference method.
+ * 
+ * node types: fixed temp, floating, heat source (with no temp), is that a node type
+ * or an aspect of a node?
+ * edge types: conductive
+ */
+
 public class DiffusiveMediumTest {
     private static final Logger logger = Logger.getLogger(DiffusiveMediumTest.class);
-
-    @Test
-    public void foo() {
-        DiffusiveMedium m = new DiffusiveMedium();
-    }
 
     /** try the 1d diffusion eq */
     public class MyEq implements FirstOrderDifferentialEquations {
@@ -33,6 +37,7 @@ public class DiffusiveMediumTest {
         }
 
         public void computeDerivatives(double t, double[] y, double[] dot) {
+            logger.info("compute derivative at t: " + t);
             if (y.length != dimension)
                 throw new RuntimeException("bug");
             if (dot.length != dimension)
@@ -67,6 +72,7 @@ public class DiffusiveMediumTest {
                     dot[i] = alpha[i] * netHeat;
                 }
             }
+            logger.info("derivatives:" + Util.print(dot));
         }
 
         public int getDimension() {
@@ -83,11 +89,11 @@ public class DiffusiveMediumTest {
         }
 
         public void handleStep(StepInterpolator interpolator, boolean isLast) {
-            // try {
-            // logger.info("derivatives:" + Util.print(interpolator.getInterpolatedDerivatives()));
-            // } catch (DerivativeException e) {
-            // e.printStackTrace();
-            // }
+//            try {
+//                logger.info("derivatives:" + Util.print(interpolator.getInterpolatedDerivatives()));
+//            } catch (DerivativeException e) {
+//                e.printStackTrace();
+//            }
             try {
                 logger.info("state: " + String.format("%5.2f", interpolator.getInterpolatedTime()) + " : "
                         + Util.print(interpolator.getInterpolatedState()));
@@ -95,8 +101,9 @@ public class DiffusiveMediumTest {
                 e.printStackTrace();
             }
             // make sure the step is what we want.
+            // (not for the adaptive one)
             if (!isLast) {
-                Assert.assertEquals(step, interpolator.getCurrentTime() - interpolator.getPreviousTime(), 1.0e-12);
+                // Assert.assertEquals(step, interpolator.getCurrentTime() - interpolator.getPreviousTime(), 1.0e-12);
             }
         }
 
@@ -110,10 +117,19 @@ public class DiffusiveMediumTest {
 
     @Test
     public void testStepSize() throws DerivativeException, IntegratorException {
-        final double step = 0.2;
+        final double step = 0.3;
+        // works with step 0.3
+        int nSteps = 40;
+        double minStep = 0.0001;
+        double maxStep = 2;
+        double scalAbsoluteTolerance = 0.1;
+        double scalRelativeTolerance = 0.1;
+        FirstOrderIntegrator integ = new AdamsBashforthIntegrator(nSteps, minStep, maxStep, scalAbsoluteTolerance,
+                scalRelativeTolerance);
         // FirstOrderIntegrator integ = new EulerIntegrator(step);
         // FirstOrderIntegrator integ = new MidpointIntegrator(step);
-        FirstOrderIntegrator integ = new ClassicalRungeKuttaIntegrator(step);
+        // works with step 0.4
+        // FirstOrderIntegrator integ = new ClassicalRungeKuttaIntegrator(step);
         StepHandler handler = new MyHandler(step);
 
         integ.addStepHandler(handler);
