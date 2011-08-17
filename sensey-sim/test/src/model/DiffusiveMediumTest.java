@@ -4,7 +4,7 @@ import org.apache.commons.math.ode.DerivativeException;
 import org.apache.commons.math.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math.ode.FirstOrderIntegrator;
 import org.apache.commons.math.ode.IntegratorException;
-import org.apache.commons.math.ode.nonstiff.MidpointIntegrator;
+import org.apache.commons.math.ode.nonstiff.EulerIntegrator;
 import org.apache.commons.math.ode.sampling.StepHandler;
 import org.apache.commons.math.ode.sampling.StepInterpolator;
 import org.apache.log4j.Logger;
@@ -38,12 +38,33 @@ public class DiffusiveMediumTest {
                 throw new RuntimeException("bug");
             for (int i = 0; i < dot.length; i++) {
                 // try to enforce a boundary condition?
-                if ((i == 0) || (i == dimension - 1))
+                if ((i == 0) || (i == dimension - 1)) {
                     // dirichlet condition, zero derivative, i.e. constant value.
                     dot[i] = 0;
-                else
+                } else {
                     // heat equation, dot = A d2y/dx2.
-                    dot[i] = -1 * y[i];
+                    // y is not on the edge here.
+                    // TODO: in a network, it's all the neighbors
+                    // (in 1d, it's just two.)
+                    double left = y[i - 1];
+                    // logger.info("left: " + i + " " + left);
+                    double right = y[i + 1];
+                    // logger.info("right: " + i + " " + right);
+                    double center = y[i];
+                    // logger.info("center: " + i + " " + center);
+                    double leftHeat = center - left;
+                    // logger.info("leftHeat: " + i + " " + leftHeat);
+                    double rightHeat = right - center;
+                    // logger.info("rightHeat: " + i + " " + rightHeat);
+                    double netHeat = rightHeat - leftHeat;
+                    // logger.info("netHeat: " + i + " " + netHeat);
+                    // note, this is wrong; it should involve the alphas of the neighbors too.
+                    // TODO: add the "q" term for internal (i.e. solar absorbed) heat.
+                    // TODO: add some notion of units
+                    // TODO: also infiltration, which is a constant exchange of fluid, thus
+                    // heat flow proportional to delta-T, just like conduction.
+                    dot[i] = alpha[i] * netHeat;
+                }
             }
         }
 
@@ -61,14 +82,14 @@ public class DiffusiveMediumTest {
         }
 
         public void handleStep(StepInterpolator interpolator, boolean isLast) {
+            // try {
+            // logger.info("derivatives:" + Util.print(interpolator.getInterpolatedDerivatives()));
+            // } catch (DerivativeException e) {
+            // e.printStackTrace();
+            // }
             try {
-                logger.info("derivatives:" + Util.print(interpolator.getInterpolatedDerivatives()));
-            } catch (DerivativeException e) {
-                e.printStackTrace();
-            }
-            logger.info("time: " + interpolator.getInterpolatedTime());
-            try {
-                logger.info("state: " + Util.print(interpolator.getInterpolatedState()));
+                logger.info("state: " + String.format("%5.2f", interpolator.getInterpolatedTime()) + " : "
+                        + Util.print(interpolator.getInterpolatedState()));
             } catch (DerivativeException e) {
                 e.printStackTrace();
             }
@@ -88,14 +109,14 @@ public class DiffusiveMediumTest {
 
     @Test
     public void testStepSize() throws DerivativeException, IntegratorException {
-        final double step = 1.23456;
-        // FirstOrderIntegrator integ = new EulerIntegrator(step);
-        FirstOrderIntegrator integ = new MidpointIntegrator(step);
+        final double step = 0.1;
+        FirstOrderIntegrator integ = new EulerIntegrator(step);
+        // FirstOrderIntegrator integ = new MidpointIntegrator(step);
         StepHandler handler = new MyHandler(step);
 
         integ.addStepHandler(handler);
 
-        int dimension = 3;
+        int dimension = 10;
         double[] alpha = new double[dimension];
         for (int i = 0; i < dimension; ++i) {
             alpha[i] = 1;
@@ -107,9 +128,13 @@ public class DiffusiveMediumTest {
         // except the boundaries
         y0[0] = 1;
         y0[dimension - 1] = 2;
-        double t = 10;
-        double[] y = new double[dimension];
-        integ.integrate(eq, t0, y0, t, y);
+        double t1 = 20;
+        double[] y1 = new double[dimension];
+        integ.integrate(eq, t0, y0, t1, y1);
+        // and then do it some more, with a new boundary value
+        y1[dimension - 1] = -1;
+        double t2 = 40;
+        double[] y2 = new double[dimension];
+        integ.integrate(eq, t1, y1, t2, y2);
     }
-
 }
