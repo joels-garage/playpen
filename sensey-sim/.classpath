@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="test/src"/>
+	<classpathentry kind="src" path="conf"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/prod/log4j-1.2.15.jar"/>
+	<classpathentry kind="lib" path="lib/test/junit-4.4.jar"/>
+	<classpathentry kind="lib" path="lib/prod/commons-math-2.2.jar" sourcepath="lib/info/commons-math-2.2-src/src/main/java"/>
+	<classpathentry kind="lib" path="lib/prod/jgrapht-jdk1.6.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
