@@ -24,6 +24,20 @@ import util.Util;
  * node types: fixed temp, floating, heat source (with no temp), is that a node type
  * or an aspect of a node?
  * edge types: conductive
+ * 
+ * 
+ * TODO: control strategies:
+ * 
+ * A. detect occupancy, and allow giant swings in temperature (i.e. 10 degrees).  look at the response to surprise arrivals.
+ * 
+ * B. don't detect anything, keep within a (minimally noticeable) 2 degree band all the time.
+ * 
+ * C. allow noticeable but not extreme changes, e.g. precool 5 degrees in the morning.
+ * 
+ * D. track inside temp to outside, i.e. if it's 90, then inside is 75, not 72.  something like that.
+ * 
+ * 
+ * TODO: freezers, like at 7-11.
  */
 
 public class CopyOfDiffusiveMediumTest {
@@ -147,10 +161,11 @@ public class CopyOfDiffusiveMediumTest {
 
     public static class Material {
         /** these are from wikipedia, engineering toolbox */
-        public static final Material IRON = new Material(80, 7870, 0.450);
-        public static final Material STYROFOAM = new Material(0.033, 75, 1.3);
-        public static final Material DOUGLAS_FIR = new Material(0.15, 580, 1.7);
+        public static final Material IRON = new Material("Iron", 80, 7870, 0.450);
+        public static final Material STYROFOAM = new Material("Styrofoam", 0.033, 75, 1.3);
+        public static final Material DOUGLAS_FIR = new Material("Douglas Fir", 0.15, 580, 1.7);
 
+        public final String name;
         /** thermal conductivity (SI units: W/(m·K)) */
         public final double k;
         /** density (kg/m³) */
@@ -158,7 +173,8 @@ public class CopyOfDiffusiveMediumTest {
         /** specific heat capacity (J/(kg·K)) */
         public final double cp;
 
-        public Material(double k, double rho, double cp) {
+        public Material(String name, double k, double rho, double cp) {
+            this.name = name;
             this.k = k;
             this.rho = rho;
             this.cp = cp;
@@ -171,7 +187,8 @@ public class CopyOfDiffusiveMediumTest {
 
         @Override
         public String toString() {
-            return "Material [k=" + k + ", rho=" + rho + ", cp=" + cp + "]";
+            return name;
+            // return "Material [k=" + k + ", rho=" + rho + ", cp=" + cp + "]";
         }
     }
 
@@ -205,32 +222,83 @@ public class CopyOfDiffusiveMediumTest {
         public void setNextTemperature(double nextTemperature) {
             this.nextTemperature = nextTemperature;
         }
-
-        @Override
-        public String toString() {
-            return "VertexType [material=" + material + ", thickness=" + thickness + ", temperature=" + temperature
-                    + ", nextTemperature=" + nextTemperature + "]";
-        }
-
     }
 
+    /**
+     * T is free, heat conducted from neighbors, no internal heat.
+     * 
+     * @author joel
+     * 
+     */
     public static class UnboundedVertex extends VertexType {
         public UnboundedVertex(Material material, double thickness) {
             super(material, thickness);
         }
+
+        @Override
+        public String toString() {
+            return "UnboundedVertex [material=" + material + ", thickness=" + thickness + ", temperature="
+                    + getTemperature() + ", nextTemperature=" + getNextTemperature() + "]";
+        }
     }
 
-    /** vertex whose value is specified externally (perhaps as a function of time) */
-    public static class DirichletVertex extends VertexType {
-        // for now, it's a constant. TODO: specify a function
-        private final double constantTemperature = 1;
+    /**
+     * time-dependent internal heat for a single node.
+     * 
+     * TODO: how to tell this thing what time it is?
+     * 
+     * TODO: attach this to an equipment model, i.e. a thermostat, a capacity.
+     */
+    public static class InternalHeat {
+        double heatWatts() {
+            return 1;
+        }
+    }
 
-        public DirichletVertex(Material material, double thickness) {
+    /** time-dependent temperature for dirichlet nodes */
+    public static class TemperatureSource {
+        double temperature() {
+            return 0;
+        }
+    }
+
+    /**
+     * free T, heat from neighbors and from internal heat. TODO: add this to UnboundedVertex; it's just a term that can
+     * be zero.
+     */
+    public static class InternalHeatVertex extends UnboundedVertex {
+        private final InternalHeat internalHeat;
+
+        public InternalHeatVertex(Material material, double thickness, InternalHeat internalHeat) {
             super(material, thickness);
+            this.internalHeat = internalHeat;
+        }
+
+        public InternalHeat getInternalHeat() {
+            return internalHeat;
+        }
+
+        public String toString() {
+            return "InternalHeatVertex [temperature=" + getTemperature() + ", material=" + material + ", thickness="
+                    + thickness + "]";
+        }
+    }
+
+    /**
+     * vertex whose value is specified externally (perhaps as a function of time)
+     * 
+     * TODO: extract the "set temperature" stuff to a different subclass of VertextType
+     */
+    public static class DirichletVertex extends VertexType {
+        private final TemperatureSource temperatureSource;
+
+        public DirichletVertex(Material material, double thickness, TemperatureSource temperatureSource) {
+            super(material, thickness);
+            this.temperatureSource = temperatureSource;
         }
 
         public double getTemperature() {
-            return constantTemperature;
+            return temperatureSource.temperature();
         }
 
         public void setTemperature(double temperature) {
@@ -238,7 +306,7 @@ public class CopyOfDiffusiveMediumTest {
         }
 
         public double getNextTemperature() {
-            return constantTemperature;
+            return temperatureSource.temperature();
         }
 
         public void setNextTemperature(double temperature) {
@@ -247,10 +315,9 @@ public class CopyOfDiffusiveMediumTest {
 
         @Override
         public String toString() {
-            return "DirichletVertex [constantTemperature=" + constantTemperature + ", material=" + material
-                    + ", thickness=" + thickness + "]";
+            return "DirichletVertex [temperature=" + getTemperature() + ", material=" + material + ", thickness="
+                    + thickness + "]";
         }
-
     }
 
     /**
@@ -268,28 +335,59 @@ public class CopyOfDiffusiveMediumTest {
 
     @Test
     public void directFiniteDifferenceGraph() {
-        // make a linear graph
-        int length = 10;
         UndirectedGraph<VertexType, EdgeType> g = new Multigraph<VertexType, EdgeType>(EdgeType.class);
-        VertexType v0 = new DirichletVertex(Material.IRON, 0.01);
+        double thicknessMeters = 0.01;
+        VertexType v0 = new DirichletVertex(Material.DOUGLAS_FIR, thicknessMeters, new TemperatureSource() {
+            @Override
+            double temperature() {
+                return 0.0;
+            }
+
+        });
         g.addVertex(v0);
-        for (int i = 1; i < length - 1; ++i) {
-            VertexType v1 = new UnboundedVertex(Material.IRON, 0.01);
+        for (int i = 0; i < 2; ++i) {
+            VertexType v1 = new UnboundedVertex(Material.DOUGLAS_FIR, thicknessMeters);
             v1.setTemperature(0);
             g.addVertex(v1);
             g.addEdge(v0, v1);
             v0 = v1;
         }
-        VertexType v1 = new DirichletVertex(Material.IRON, 0.01);
+        thicknessMeters = 0.01;
+        for (int i = 0; i < 5; ++i) {
+            VertexType v1 = new UnboundedVertex(Material.STYROFOAM, thicknessMeters);
+            v1.setTemperature(0);
+            g.addVertex(v1);
+            g.addEdge(v0, v1);
+            v0 = v1;
+        }
+        thicknessMeters = 0.01;
+        for (int i = 0; i < 2; ++i) {
+            VertexType v1 = new UnboundedVertex(Material.DOUGLAS_FIR, thicknessMeters);
+            v1.setTemperature(0);
+            g.addVertex(v1);
+            g.addEdge(v0, v1);
+            v0 = v1;
+        }
+        VertexType v1 = new InternalHeatVertex(Material.DOUGLAS_FIR, thicknessMeters, new InternalHeat() {
+
+            @Override
+            double heatWatts() {
+                return 0.001;
+            }
+
+        });
         g.addVertex(v1);
         g.addEdge(v0, v1);
 
         // traversal order is unimportant, so don't bother with the jgrapht iterators.
-        double timestepSec = 0.2;
-        for (int step = 0; step < 100; ++step) {
+        // max time step might depend on alpha?
+        // TODO: detect nonconvergence
+        double timestepSec = 3000;
+        for (int step = 0; step < 10000; ++step) {
+            logger.info("step: " + step);
             // what's the temp for the next iteration?
             for (VertexType v : g.vertexSet()) {
-                logger.info("step: " + step + " v: " + v);
+                logger.info("v: " + v);
                 if (v instanceof UnboundedVertex) {
                     Set<EdgeType> edges = g.edgesOf(v);
                     double q = 0;
@@ -305,10 +403,15 @@ public class CopyOfDiffusiveMediumTest {
                             logger.info("skip it, it's a loop.");
                             continue;
                         }
-                        double distance = (v.thickness + other.thickness) / 2;
-                        q += (other.getTemperature() - v.getTemperature()) / distance;
+                        double effectiveK = v.thickness
+                                / ((other.thickness / other.material.k) + (v.thickness / v.material.k));
+                        double deltaT = other.getTemperature() - v.getTemperature();
+                        q += (deltaT) * effectiveK / (v.material.cp * v.material.rho);
                     }
-                    v.setNextTemperature(v.getTemperature() + timestepSec * v.material.alpha() * q);
+                    if (v instanceof InternalHeatVertex) {
+                        q += ((InternalHeatVertex) v).getInternalHeat().heatWatts();
+                    }
+                    v.setNextTemperature(v.getTemperature() + timestepSec * q);
                 }
             }
             // now set the next
