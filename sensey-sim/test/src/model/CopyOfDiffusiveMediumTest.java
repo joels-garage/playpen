@@ -166,8 +166,10 @@ public class CopyOfDiffusiveMediumTest {
         public static final Material DOUGLAS_FIR = new Material("Douglas Fir", 0.15, 580, 1.7);
         /** effective K is like 5 w/m2k, but the k here is w/mk */
         public static final Material AIR_BOUNDARY_LAYER = new Material("Air Boundary Layer", 0.1, 1.225, 1.006);
-        /** very high conductivity (like diamond :-); assumes infinitely well mixed air */
-        public static final Material AIR_BULK_MIXED = new Material("Air Bulk Mixed", 1000, 1.225, 1.006);
+        /**
+         * very high conductivity; assumes infinitely well mixed air TODO: hard to converge this. do it another way.
+         */
+        public static final Material AIR_BULK_MIXED = new Material("Air Bulk Mixed", 10, 1.225, 1.006);
 
         public final String name;
         /** thermal conductivity (SI units: W/(m·K)) */
@@ -226,6 +228,12 @@ public class CopyOfDiffusiveMediumTest {
         public void setNextTemperature(double nextTemperature) {
             this.nextTemperature = nextTemperature;
         }
+
+        @Override
+        public String toString() {
+            return String.format("%20s %20s %4.2f %8.3f", getClass().getSimpleName(), material, thickness,
+                    getTemperature());
+        }
     }
 
     /**
@@ -239,11 +247,6 @@ public class CopyOfDiffusiveMediumTest {
             super(material, thickness);
         }
 
-        @Override
-        public String toString() {
-            return "UnboundedVertex [material=" + material + ", thickness=" + thickness + ", temperature="
-                    + getTemperature() + "]";
-        }
     }
 
     /**
@@ -281,11 +284,6 @@ public class CopyOfDiffusiveMediumTest {
         public InternalHeat getInternalHeat() {
             return internalHeat;
         }
-
-        public String toString() {
-            return "InternalHeatVertex [temperature=" + getTemperature() + ", material=" + material + ", thickness="
-                    + thickness + "]";
-        }
     }
 
     /**
@@ -315,12 +313,6 @@ public class CopyOfDiffusiveMediumTest {
 
         public void setNextTemperature(double temperature) {
             throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public String toString() {
-            return "DirichletVertex [temperature=" + getTemperature() + ", material=" + material + ", thickness="
-                    + thickness + "]";
         }
     }
 
@@ -372,11 +364,19 @@ public class CopyOfDiffusiveMediumTest {
             g.addEdge(v0, v1);
             v0 = v1;
         }
-        VertexType v1 = new InternalHeatVertex(Material.DOUGLAS_FIR, thicknessMeters, new InternalHeat() {
+
+        // TODO: make a specific type for the boundary layer rather than specifying a thickness.
+        VertexType v1 = new UnboundedVertex(Material.AIR_BOUNDARY_LAYER, thicknessMeters);
+        v1.setTemperature(0);
+        g.addVertex(v1);
+        g.addEdge(v0, v1);
+        v0 = v1;
+
+        v1 = new InternalHeatVertex(Material.AIR_BULK_MIXED, 1, new InternalHeat() {
 
             @Override
             double heatWatts() {
-                return 0.05;
+                return 50;
             }
 
         });
@@ -386,12 +386,14 @@ public class CopyOfDiffusiveMediumTest {
         // traversal order is unimportant, so don't bother with the jgrapht iterators.
         // max time step might depend on alpha?
         // TODO: detect nonconvergence
-        double timestepSec = 3000;
-        for (int step = 0; step < 3000; ++step) {
-            logger.info("step: " + step);
+        double timestepSec = 0.3;
+        for (int step = 0; step < 20000000; ++step) {
+            if (step % 10000 == 0)
+                logger.info("step: " + step);
             // what's the temp for the next iteration?
             for (VertexType v : g.vertexSet()) {
-                logger.info("v: " + v);
+                if (step % 10000 == 0)
+                    logger.info("v: " + v);
                 if (v instanceof UnboundedVertex) {
                     Set<EdgeType> edges = g.edgesOf(v);
                     double q = 0;
@@ -413,7 +415,7 @@ public class CopyOfDiffusiveMediumTest {
                         q += (deltaT) * effectiveK;
                     }
                     if (v instanceof InternalHeatVertex) {
-                        q += ((InternalHeatVertex) v).getInternalHeat().heatWatts();
+                        q += ((InternalHeatVertex) v).getInternalHeat().heatWatts() * timestepSec;
                     }
                     v.setNextTemperature(v.getTemperature() + timestepSec * q / (v.material.cp * v.material.rho));
                 }
