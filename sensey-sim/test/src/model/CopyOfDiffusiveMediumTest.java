@@ -238,7 +238,7 @@ public class CopyOfDiffusiveMediumTest {
         @Override
         public String toString() {
             return "UnboundedVertex [material=" + material + ", thickness=" + thickness + ", temperature="
-                    + getTemperature() + ", nextTemperature=" + getNextTemperature() + "]";
+                    + getTemperature() + "]";
         }
     }
 
@@ -372,7 +372,7 @@ public class CopyOfDiffusiveMediumTest {
 
             @Override
             double heatWatts() {
-                return 0.001;
+                return 0.05;
             }
 
         });
@@ -383,7 +383,7 @@ public class CopyOfDiffusiveMediumTest {
         // max time step might depend on alpha?
         // TODO: detect nonconvergence
         double timestepSec = 3000;
-        for (int step = 0; step < 10000; ++step) {
+        for (int step = 0; step < 3000; ++step) {
             logger.info("step: " + step);
             // what's the temp for the next iteration?
             for (VertexType v : g.vertexSet()) {
@@ -406,12 +406,12 @@ public class CopyOfDiffusiveMediumTest {
                         double effectiveK = v.thickness
                                 / ((other.thickness / other.material.k) + (v.thickness / v.material.k));
                         double deltaT = other.getTemperature() - v.getTemperature();
-                        q += (deltaT) * effectiveK / (v.material.cp * v.material.rho);
+                        q += (deltaT) * effectiveK;
                     }
                     if (v instanceof InternalHeatVertex) {
                         q += ((InternalHeatVertex) v).getInternalHeat().heatWatts();
                     }
-                    v.setNextTemperature(v.getTemperature() + timestepSec * q);
+                    v.setNextTemperature(v.getTemperature() + timestepSec * q / (v.material.cp * v.material.rho));
                 }
             }
             // now set the next
