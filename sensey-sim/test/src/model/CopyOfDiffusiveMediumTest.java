@@ -164,6 +164,10 @@ public class CopyOfDiffusiveMediumTest {
         public static final Material IRON = new Material("Iron", 80, 7870, 0.450);
         public static final Material STYROFOAM = new Material("Styrofoam", 0.033, 75, 1.3);
         public static final Material DOUGLAS_FIR = new Material("Douglas Fir", 0.15, 580, 1.7);
+        /** effective K is like 5 w/m2k, but the k here is w/mk */
+        public static final Material AIR_BOUNDARY_LAYER = new Material("Air Boundary Layer", 0.1, 1.225, 1.006);
+        /** very high conductivity (like diamond :-); assumes infinitely well mixed air */
+        public static final Material AIR_BULK_MIXED = new Material("Air Bulk Mixed", 1000, 1.225, 1.006);
 
         public final String name;
         /** thermal conductivity (SI units: W/(m·K)) */
