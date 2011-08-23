@@ -5,11 +5,9 @@ import org.apache.commons.math.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math.ode.FirstOrderIntegrator;
 import org.apache.commons.math.ode.IntegratorException;
 import org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegrator;
-import org.apache.commons.math.ode.nonstiff.EulerIntegrator;
 import org.apache.commons.math.ode.sampling.StepHandler;
 import org.apache.commons.math.ode.sampling.StepInterpolator;
 import org.apache.log4j.Logger;
-import org.junit.Assert;
 import org.junit.Test;
 
 import util.Util;
@@ -82,6 +80,7 @@ public class DiffusiveMediumTest {
 
     /** just logs and has a test in it */
     public class MyHandler implements StepHandler {
+        @SuppressWarnings("unused")
         private final double step;
 
         public MyHandler(double step) {
