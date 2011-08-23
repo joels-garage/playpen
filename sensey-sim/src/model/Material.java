@@ -34,6 +34,15 @@ public class Material {
     /** specific heat capacity (J/(kg·K)) */
     public final double cp;
 
+    /**
+     * @param name
+     * @param k
+     *            conductivity W/mK
+     * @param rho
+     *            density kg/m3
+     * @param cp
+     *            heat capacity J/kgK
+     */
     public Material(String name, double k, double rho, double cp) {
         this.name = name;
         this.k = k;

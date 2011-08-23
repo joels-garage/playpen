@@ -59,17 +59,30 @@ public class ForwardFiniteDifferenceSimulator {
                             logger.info("skip it, it's a loop.");
                             continue;
                         }
+                        if (logger.isTraceEnabled())
+                            logger.trace("this: " + v.toString() + " other: " + other.toString());
+
+                        // TODO: move these calcs to the graph, since they never change.
+                        double myHalfThickness = v.getHalfThickness();
+                        double otherHalfThickness = other.getHalfThickness();
                         // w/mK
-                        double effectiveK = v.thickness
-                                / ((other.thickness / other.material.k) + (v.thickness / v.material.k));
+                        double effectiveK = myHalfThickness
+                                / ((otherHalfThickness / other.material.k) + (myHalfThickness / v.material.k));
                         double deltaT = other.getTemperature() - v.getTemperature();
-                        q += deltaT * effectiveK * e.area / v.thickness;
+                        // q in watts
+                        q += deltaT * effectiveK * e.area / myHalfThickness;
+                        if (logger.isTraceEnabled())
+                            logger.trace("deltaT: " + deltaT + " q: " + q);
                     }
                     if (v instanceof InternalHeatVertex) {
                         q += ((InternalHeatVertex) v).getInternalHeat().heatWatts();
                     }
-                    v.setNextTemperature(v.getTemperature() + timestepSec * q
-                            / (v.material.cp * v.material.rho * v.getVolume()));
+
+                    double totalDeltaT = timestepSec * q / v.getNodeHeatCapacity();
+                    if (logger.isTraceEnabled())
+                        logger.trace("totalDeltaT: " + totalDeltaT + " totalQ: " + q);
+
+                    v.setNextTemperature(v.getTemperature() + totalDeltaT);
                 }
             }
             // now set the next

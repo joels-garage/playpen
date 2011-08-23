@@ -12,7 +12,7 @@ public abstract class VertexType {
      * 
      * meters
      */
-    public final double thickness;
+    private final double thickness;
     /** for the current time step (K) */
     private double temperature;
     /** for the next time step (K) */
@@ -48,6 +48,10 @@ public abstract class VertexType {
     public double getVolume() {
         return area * thickness;
     }
+    
+    public double getHalfThickness() {
+        return thickness / 2;
+    }
 
     /** j/m3k */
     public double getVolumetricHeatCapacity() {
@@ -59,9 +63,15 @@ public abstract class VertexType {
         return getVolumetricHeatCapacity() * getVolume();
     }
 
+    /** W/K */
+    public double getConductance() {
+        return material.k * area / thickness;
+
+    }
+
     @Override
     public String toString() {
-        return String
-                .format("%20s %20s %4.3f %8.3f", getClass().getSimpleName(), material, thickness, getTemperature());
+        return String.format("class: %20s material: %20s thickness: %4.3f temperature: %12.6f", getClass()
+                .getSimpleName(), material, thickness, getTemperature());
     }
 }

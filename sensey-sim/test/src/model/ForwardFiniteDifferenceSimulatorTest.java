@@ -153,7 +153,7 @@ public class ForwardFiniteDifferenceSimulatorTest {
         g.addVertex(v0);
         Assert.assertEquals(10, v0.getVolume(), 0.01);
         Assert.assertEquals(1000, v0.getNodeHeatCapacity(), 0.01);
-        
+
         /*
          * run for 100 seconds in 1 second steps
          * 
@@ -182,7 +182,6 @@ public class ForwardFiniteDifferenceSimulatorTest {
         Assert.assertEquals(10, v0.getVolume(), 0.01);
         Assert.assertEquals(12.32, v0.getNodeHeatCapacity(), 0.01);
 
-        
         /*
          * run for 100 seconds in 1 second steps
          * 
@@ -239,9 +238,9 @@ public class ForwardFiniteDifferenceSimulatorTest {
         double y = iter.next().getTemperature();
         Assert.assertEquals(5, x + y, 0.01);
         // no theory for this value
-        Assert.assertEquals(4.08, x, 0.01);
+        Assert.assertEquals(3.58, x, 0.01);
         // no theory for this value
-        Assert.assertEquals(0.92, y, 0.01);
+        Assert.assertEquals(1.42, y, 0.01);
         Assert.assertFalse(iter.hasNext());
     }
 
@@ -265,7 +264,7 @@ public class ForwardFiniteDifferenceSimulatorTest {
         v1.setTemperature(0);
         g.addVertex(v1);
         Assert.assertEquals(10, v1.getVolume(), 0.01);
-        Assert.assertEquals(10, v1.getNodeHeatCapacity(), 0.01);
+        Assert.assertEquals(1000, v1.getNodeHeatCapacity(), 0.01);
 
         g.addEdge(v0, v1, new EdgeType(5));
         // another edge, so same total K as above
@@ -286,8 +285,8 @@ public class ForwardFiniteDifferenceSimulatorTest {
         double y = iter.next().getTemperature();
         Assert.assertEquals(5, x + y, 0.01);
         // same values as above
-        Assert.assertEquals(4.08, x, 0.01);
-        Assert.assertEquals(0.92, y, 0.01);
+        Assert.assertEquals(3.58, x, 0.01);
+        Assert.assertEquals(1.42, y, 0.01);
         Assert.assertFalse(iter.hasNext());
     }
 
@@ -311,7 +310,7 @@ public class ForwardFiniteDifferenceSimulatorTest {
         v1.setTemperature(0);
         g.addVertex(v1);
         Assert.assertEquals(10, v1.getVolume(), 0.01);
-        Assert.assertEquals(10, v1.getNodeHeatCapacity(), 0.01);
+        Assert.assertEquals(1000, v1.getNodeHeatCapacity(), 0.01);
 
         // same total area (10) but not evenly distributed
         g.addEdge(v0, v1, new EdgeType(7.5));
@@ -332,8 +331,8 @@ public class ForwardFiniteDifferenceSimulatorTest {
         double y = iter.next().getTemperature();
         Assert.assertEquals(5, x + y, 0.01);
         // same values as above
-        Assert.assertEquals(4.08, x, 0.01);
-        Assert.assertEquals(0.92, y, 0.01);
+        Assert.assertEquals(3.58, x, 0.01);
+        Assert.assertEquals(1.42, y, 0.01);
         Assert.assertFalse(iter.hasNext());
     }
 
@@ -353,21 +352,21 @@ public class ForwardFiniteDifferenceSimulatorTest {
         Assert.assertEquals(10, v0.getVolume(), 0.01);
         Assert.assertEquals(1000, v0.getNodeHeatCapacity(), 0.01);
 
-        // each of these is half the size of the one above for the same total capacity.
-        
-        VertexType v1 = new UnboundedVertex(Material.FOR_TESTING, 1, 5);
-        v1.setTemperature(0);
-        g.addVertex(v1);
-        g.addEdge(v0, v1, new EdgeType(5));
-        Assert.assertEquals(5, v1.getVolume(), 0.01);
-        Assert.assertEquals(10, v1.getNodeHeatCapacity(), 0.01);
+        // each of these is the same size as the above so we can read the Q balance from T
 
-        v1 = new UnboundedVertex(Material.FOR_TESTING, 1, 5);
+        VertexType v1 = new UnboundedVertex(Material.FOR_TESTING, 1, 10);
         v1.setTemperature(0);
         g.addVertex(v1);
         g.addEdge(v0, v1, new EdgeType(5));
-        Assert.assertEquals(5, v1.getVolume(), 0.01);
-        Assert.assertEquals(10, v1.getNodeHeatCapacity(), 0.01);
+        Assert.assertEquals(10, v1.getVolume(), 0.01);
+        Assert.assertEquals(1000, v1.getNodeHeatCapacity(), 0.01);
+
+        v1 = new UnboundedVertex(Material.FOR_TESTING, 1, 10);
+        v1.setTemperature(0);
+        g.addVertex(v1);
+        g.addEdge(v0, v1, new EdgeType(5));
+        Assert.assertEquals(10, v1.getVolume(), 0.01);
+        Assert.assertEquals(1000, v1.getNodeHeatCapacity(), 0.01);
 
         /*
          * run for 100 seconds in 1 second steps
@@ -385,12 +384,12 @@ public class ForwardFiniteDifferenceSimulatorTest {
         double z = iter.next().getTemperature();
         // assert correct total heat
         Assert.assertEquals(5, x + y + z, 0.01);
-        // the heated node
-        Assert.assertEquals(5, x, 0.01);
+        // the heated node -- this is lower than the above case because the heat sink is bigger.
+        Assert.assertEquals(3.39, x, 0.01);
         // more
-        Assert.assertEquals(5, y, 0.01);
+        Assert.assertEquals(0.80, y, 0.01);
         // less
-        Assert.assertEquals(5, z, 0.01);
+        Assert.assertEquals(0.80, z, 0.01);
         Assert.assertFalse(iter.hasNext());
     }
 
@@ -410,23 +409,21 @@ public class ForwardFiniteDifferenceSimulatorTest {
         Assert.assertEquals(10, v0.getVolume(), 0.01);
         Assert.assertEquals(1000, v0.getNodeHeatCapacity(), 0.01);
 
-        VertexType v1 = new UnboundedVertex(Material.FOR_TESTING, 1, 5);
+        VertexType v1 = new UnboundedVertex(Material.FOR_TESTING, 1, 10);
         v1.setTemperature(0);
         g.addVertex(v1);
         // lots of conduction
         g.addEdge(v0, v1, new EdgeType(15));
-        Assert.assertEquals(5, v1.getVolume(), 0.01);
-        Assert.assertEquals(10, v1.getNodeHeatCapacity(), 0.01);
+        Assert.assertEquals(10, v1.getVolume(), 0.01);
+        Assert.assertEquals(1000, v1.getNodeHeatCapacity(), 0.01);
 
-        v1 = new UnboundedVertex(Material.FOR_TESTING, 1, 5);
+        v1 = new UnboundedVertex(Material.FOR_TESTING, 1, 10);
         v1.setTemperature(0);
         g.addVertex(v1);
         // less conduction
-        g.addEdge(v0, v1, new EdgeType(5));        
-        Assert.assertEquals(5, v1.getVolume(), 0.01);
-        Assert.assertEquals(10, v1.getNodeHeatCapacity(), 0.01);
-
-
+        g.addEdge(v0, v1, new EdgeType(5));
+        Assert.assertEquals(10, v1.getVolume(), 0.01);
+        Assert.assertEquals(1000, v1.getNodeHeatCapacity(), 0.01);
 
         /*
          * run for 100 seconds in 1 second steps
@@ -444,13 +441,73 @@ public class ForwardFiniteDifferenceSimulatorTest {
         double z = iter.next().getTemperature();
         // assert correct total heat
         Assert.assertEquals(5, x + y + z, 0.01);
-        // the heated node
-        Assert.assertEquals(5, x, 0.01);
+        // the heated node, less than the above because conduction to sink is higher
+        Assert.assertEquals(2.81, x, 0.01);
         // more
-        Assert.assertEquals(5, y, 0.01);
-        // less
-        Assert.assertEquals(5, z, 0.01);
+        Assert.assertEquals(1.51, y, 0.01);
+        // less than the above case because the "big" sink is taking heat
+        Assert.assertEquals(0.68, z, 0.01);
         Assert.assertFalse(iter.hasNext());
     }
 
+    /**
+     * 
+     */
+    @Test
+    public void pureK() {
+        HeatGraph g = new HeatGraph();
+
+        // supply heat at a fixed rate on one end
+        VertexType v0 = new InternalHeatVertex(Material.IRON, 1, 10, new InternalHeat() {
+            @Override
+            public double heatWatts() {
+                return 50;
+            }
+        });
+        g.addVertex(v0);
+        Assert.assertEquals(10, v0.getVolume(), 0.01);
+        Assert.assertEquals(35415, v0.getNodeHeatCapacity(), 0.01);
+
+        // an insulator in the middle
+        VertexType v1 = new UnboundedVertex(Material.STYROFOAM, 1, 10);
+        v1.setTemperature(0);
+        g.addVertex(v1);
+        g.addEdge(v0, v1, new EdgeType(10));
+        Assert.assertEquals(10, v1.getVolume(), 0.01);
+        Assert.assertEquals(975, v1.getNodeHeatCapacity(), 0.01);
+        // k of 0.033, thickness 1m, so U of 0.033 W/m2K, area of 10m, 0.33 W/K
+        Assert.assertEquals(0.33, v1.getConductance(), 0.01);
+
+        // Dirichlet boundary on the other end
+        VertexType v2 = new DirichletVertex(Material.IRON, 1, 10, new TemperatureSource() {
+
+            @Override
+            double temperature() {
+                return 0;
+            }
+
+        });
+        g.addVertex(v2);
+        g.addEdge(v1, v2, new EdgeType(10));
+        Assert.assertEquals(10, v1.getVolume(), 0.01);
+        Assert.assertEquals(975, v1.getNodeHeatCapacity(), 0.01);
+
+        // run it for a long time, to get equilibrium.
+        ForwardFiniteDifferenceSimulator s = new ForwardFiniteDifferenceSimulator();
+        s.doit(g, 300, 20000);
+
+        Assert.assertEquals(3, g.vertexSet().size());
+        Iterator<VertexType> iter = g.vertexSet().iterator();
+        double x = iter.next().getTemperature();
+        double y = iter.next().getTemperature();
+        double z = iter.next().getTemperature();
+        // confirm dirichlet condition of zero
+        Assert.assertEquals(0, z, 0.01);
+        // insulator node is the controlling node.
+        // so, with 50W across it, delta T is 151.51
+        Assert.assertEquals(151.51, x, 0.1);
+        // confirm average insulator temperature is half the range
+        Assert.assertEquals(151.51 / 2, y, 0.1);
+        Assert.assertFalse(iter.hasNext());
+    }
 }
