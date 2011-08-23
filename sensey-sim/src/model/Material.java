@@ -5,8 +5,18 @@ public class Material {
     public static final Material IRON = new Material("Iron", 80, 7870, 0.450);
     public static final Material STYROFOAM = new Material("Styrofoam", 0.033, 75, 1.3);
     public static final Material DOUGLAS_FIR = new Material("Douglas Fir", 0.15, 580, 1.7);
-    /** effective K is like 5 w/m2k, but the k here is w/mk */
-    public static final Material AIR_BOUNDARY_LAYER = new Material("Air Boundary Layer", 0.1, 1.225, 1.006);
+    /**
+     * actual effective K is like 5 w/m2k, but the k here is w/mk
+     */
+    public static final Material AIR_BOUNDARY_LAYER = new Material("Air Boundary Layer", 0.05, 1.225, 1.006);
+    /**
+     * actual boundary layer thickness is like 1cm.
+     * 
+     * so, 0.05 w/mk / 0.01m = 5.
+     * 
+     * TODO: handle this differently
+     */
+    public static final double AIR_BOUNDARY_LAYER_THICKNESS = 0.01;
     public static final Material FOR_TESTING = new Material("for testing", 1, 100, 1);
     /**
      * very high conductivity; assumes infinitely well mixed air TODO: hard to converge this. do it another way.

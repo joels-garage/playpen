@@ -38,11 +38,11 @@ public class ForwardFiniteDifferenceSimulator {
         // TODO: detect nonconvergence
 
         for (int step = 0; step < steps; ++step) {
-            if (step % Math.round(steps / 100) == 0)
+            if (step % (Math.round(steps / 100) + 1) == 0)
                 logger.info("step: " + step);
             // what's the temp for the next iteration?
             for (VertexType v : g.vertexSet()) {
-                if (step % Math.round(steps / 100) == 0)
+                if (step % (Math.round(steps / 100) + 1) == 0)
                     logger.info("v: " + v);
                 if (v instanceof UnboundedVertex) {
                     Set<EdgeType> edges = g.edgesOf(v);
