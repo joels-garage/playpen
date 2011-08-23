@@ -3,12 +3,12 @@ package framework;
 import java.util.Set;
 
 import model.EdgeType;
+import model.HeatGraph;
 import model.InternalHeatVertex;
 import model.UnboundedVertex;
 import model.VertexType;
 
 import org.apache.log4j.Logger;
-import org.jgrapht.UndirectedGraph;
 
 /**
  * TODO: control strategies:
@@ -31,7 +31,7 @@ import org.jgrapht.UndirectedGraph;
 public class ForwardFiniteDifferenceSimulator {
     private static final Logger logger = Logger.getLogger(ForwardFiniteDifferenceSimulator.class);
 
-    public void doit(UndirectedGraph<VertexType, EdgeType> g, double timestepSec, int steps) {
+    public void doit(HeatGraph g, double timestepSec, int steps) {
 
         // traversal order is unimportant, so don't bother with the jgrapht iterators.
         // max time step might depend on alpha?
@@ -63,7 +63,7 @@ public class ForwardFiniteDifferenceSimulator {
                         double effectiveK = v.thickness
                                 / ((other.thickness / other.material.k) + (v.thickness / v.material.k));
                         double deltaT = other.getTemperature() - v.getTemperature();
-                        q += deltaT * effectiveK * v.area / v.thickness;
+                        q += deltaT * effectiveK * e.area / v.thickness;
                     }
                     if (v instanceof InternalHeatVertex) {
                         q += ((InternalHeatVertex) v).getInternalHeat().heatWatts();

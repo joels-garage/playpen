@@ -3,14 +3,24 @@ package model;
 // a vertex is a 1-dimensional element.
 public abstract class VertexType {
     public final Material material;
-    /** m */
+    /**
+     * used to calculate the gradient across the node.
+     * 
+     * for very high conductivity nodes, it's not relevant.
+     * 
+     * TODO: make a different type for zero-gradient nodes.
+     * 
+     * meters
+     */
     public final double thickness;
     /** for the current time step (K) */
     private double temperature;
     /** for the next time step (K) */
     private double nextTemperature;
-    /** m^2 */
-    public final double area;
+    /**
+     * used for volume calculation only, for heat capacity. m^2
+     */
+    private final double area;
 
     public VertexType(Material material, double thickness, double area) {
         this.material = material;
@@ -37,6 +47,16 @@ public abstract class VertexType {
     /** cubic meters */
     public double getVolume() {
         return area * thickness;
+    }
+
+    /** j/m3k */
+    public double getVolumetricHeatCapacity() {
+        return material.getVolumetricHeatCapacity();
+    }
+
+    /** capacity of the entire node j/k */
+    public double getNodeHeatCapacity() {
+        return getVolumetricHeatCapacity() * getVolume();
     }
 
     @Override

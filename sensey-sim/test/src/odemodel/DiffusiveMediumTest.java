@@ -1,19 +1,18 @@
-package model;
+package odemodel;
 
 import org.apache.commons.math.ode.DerivativeException;
 import org.apache.commons.math.ode.FirstOrderDifferentialEquations;
+import org.apache.commons.math.ode.FirstOrderIntegrator;
 import org.apache.commons.math.ode.IntegratorException;
+import org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegrator;
 import org.apache.commons.math.ode.sampling.StepHandler;
 import org.apache.commons.math.ode.sampling.StepInterpolator;
 import org.apache.log4j.Logger;
-import org.junit.Assert;
 import org.junit.Test;
 
 import util.Util;
 
 /*
- * The explicit finite difference.
- * 
  * TODO: replace the ODE solver thing with a direct method; there's no special
  * value to it, i can just use the finite difference method.
  * 
@@ -22,8 +21,8 @@ import util.Util;
  * edge types: conductive
  */
 
-public class CopyOfDiffusiveMediumTest {
-    private static final Logger logger = Logger.getLogger(CopyOfDiffusiveMediumTest.class);
+public class DiffusiveMediumTest {
+    private static final Logger logger = Logger.getLogger(DiffusiveMediumTest.class);
 
     /** try the 1d diffusion eq */
     public class MyEq implements FirstOrderDifferentialEquations {
@@ -36,6 +35,7 @@ public class CopyOfDiffusiveMediumTest {
         }
 
         public void computeDerivatives(double t, double[] y, double[] dot) {
+            logger.info("compute derivative at t: " + t);
             if (y.length != dimension)
                 throw new RuntimeException("bug");
             if (dot.length != dimension)
@@ -70,6 +70,7 @@ public class CopyOfDiffusiveMediumTest {
                     dot[i] = alpha[i] * netHeat;
                 }
             }
+            logger.info("derivatives:" + Util.print(dot));
         }
 
         public int getDimension() {
@@ -79,6 +80,7 @@ public class CopyOfDiffusiveMediumTest {
 
     /** just logs and has a test in it */
     public class MyHandler implements StepHandler {
+        @SuppressWarnings("unused")
         private final double step;
 
         public MyHandler(double step) {
@@ -86,11 +88,11 @@ public class CopyOfDiffusiveMediumTest {
         }
 
         public void handleStep(StepInterpolator interpolator, boolean isLast) {
-            // try {
-            // logger.info("derivatives:" + Util.print(interpolator.getInterpolatedDerivatives()));
-            // } catch (DerivativeException e) {
-            // e.printStackTrace();
-            // }
+//            try {
+//                logger.info("derivatives:" + Util.print(interpolator.getInterpolatedDerivatives()));
+//            } catch (DerivativeException e) {
+//                e.printStackTrace();
+//            }
             try {
                 logger.info("state: " + String.format("%5.2f", interpolator.getInterpolatedTime()) + " : "
                         + Util.print(interpolator.getInterpolatedState()));
@@ -98,8 +100,9 @@ public class CopyOfDiffusiveMediumTest {
                 e.printStackTrace();
             }
             // make sure the step is what we want.
+            // (not for the adaptive one)
             if (!isLast) {
-                Assert.assertEquals(step, interpolator.getCurrentTime() - interpolator.getPreviousTime(), 1.0e-12);
+                // Assert.assertEquals(step, interpolator.getCurrentTime() - interpolator.getPreviousTime(), 1.0e-12);
             }
         }
 
@@ -111,10 +114,24 @@ public class CopyOfDiffusiveMediumTest {
         }
     }
 
-    @SuppressWarnings("unused")
     @Test
     public void testStepSize() throws DerivativeException, IntegratorException {
         final double step = 0.3;
+        // works with step 0.3
+        int nSteps = 40;
+        double minStep = 0.0001;
+        double maxStep = 2;
+        double scalAbsoluteTolerance = 0.1;
+        double scalRelativeTolerance = 0.1;
+        FirstOrderIntegrator integ = new AdamsBashforthIntegrator(nSteps, minStep, maxStep, scalAbsoluteTolerance,
+                scalRelativeTolerance);
+        // FirstOrderIntegrator integ = new EulerIntegrator(step);
+        // FirstOrderIntegrator integ = new MidpointIntegrator(step);
+        // works with step 0.4
+        // FirstOrderIntegrator integ = new ClassicalRungeKuttaIntegrator(step);
+        StepHandler handler = new MyHandler(step);
+
+        integ.addStepHandler(handler);
 
         int dimension = 15;
         double[] alpha = new double[dimension];
@@ -130,18 +147,12 @@ public class CopyOfDiffusiveMediumTest {
         y0[dimension - 1] = 2;
         double t1 = 20;
         double[] y1 = new double[dimension];
-        // integ.integrate(eq, t0, y0, t1, y1);
-        for (double t = t0; t < t1; ++t) {
-
-        }
+        integ.integrate(eq, t0, y0, t1, y1);
         // and then do it some more, with a new boundary value
         // TODO: do i need to do it this way?
         y1[dimension - 1] = -1;
         double t2 = 40;
         double[] y2 = new double[dimension];
-        // integ.integrate(eq, t1, y1, t2, y2);
+        integ.integrate(eq, t1, y1, t2, y2);
     }
-
-
-
 }

@@ -17,6 +17,9 @@ public class Material {
      * TODO: handle this differently
      */
     public static final double AIR_BOUNDARY_LAYER_THICKNESS = 0.01;
+    /**
+     * k=1, rho=100, cp=1
+     */
     public static final Material FOR_TESTING = new Material("for testing", 1, 100, 1);
     /**
      * very high conductivity; assumes infinitely well mixed air TODO: hard to converge this. do it another way.
@@ -47,5 +50,10 @@ public class Material {
     public String toString() {
         return name;
         // return "Material [k=" + k + ", rho=" + rho + ", cp=" + cp + "]";
+    }
+
+    /** j/m3k */
+    public double getVolumetricHeatCapacity() {
+        return cp * rho;
     }
 }

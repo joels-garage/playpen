@@ -1,6 +1,5 @@
 package framework;
 
-import model.Controller;
 import model.House;
 import model.Time;
 import model.Weather;
@@ -11,7 +10,6 @@ import model.Weather;
 public class Simulator {
 	House house = new House();
 	Weather weather = new Weather();
-	Controller controller = new Controller();
 
 	@SuppressWarnings("unused")
 	public void run() {
