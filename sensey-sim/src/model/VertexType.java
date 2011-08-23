@@ -42,6 +42,6 @@ public abstract class VertexType {
     @Override
     public String toString() {
         return String
-                .format("%20s %20s %4.2f %8.3f", getClass().getSimpleName(), material, thickness, getTemperature());
+                .format("%20s %20s %4.3f %8.3f", getClass().getSimpleName(), material, thickness, getTemperature());
     }
 }

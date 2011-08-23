@@ -21,7 +21,7 @@ public class Material {
     /**
      * very high conductivity; assumes infinitely well mixed air TODO: hard to converge this. do it another way.
      */
-    public static final Material AIR_BULK_MIXED = new Material("Air Bulk Mixed", 10, 1.225, 1.006);
+    public static final Material AIR_BULK_MIXED = new Material("Air Bulk Mixed", 10000, 1.225, 1.006);
 
     public final String name;
     /** thermal conductivity (SI units: W/(m·K)) */

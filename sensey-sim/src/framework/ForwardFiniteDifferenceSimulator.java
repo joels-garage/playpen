@@ -59,10 +59,11 @@ public class ForwardFiniteDifferenceSimulator {
                             logger.info("skip it, it's a loop.");
                             continue;
                         }
+                        // w/mK
                         double effectiveK = v.thickness
                                 / ((other.thickness / other.material.k) + (v.thickness / v.material.k));
                         double deltaT = other.getTemperature() - v.getTemperature();
-                        q += (deltaT) * effectiveK;
+                        q += deltaT * effectiveK * v.area / v.thickness;
                     }
                     if (v instanceof InternalHeatVertex) {
                         q += ((InternalHeatVertex) v).getInternalHeat().heatWatts();

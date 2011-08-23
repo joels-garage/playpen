@@ -31,7 +31,6 @@ public class ForwardFiniteDifferenceSimulatorText {
             g.addEdge(v0, v1);
             v0 = v1;
         }
-        thicknessMeters = 0.01;
         for (int i = 0; i < 5; ++i) {
             VertexType v1 = new UnboundedVertex(Material.STYROFOAM, thicknessMeters, areaSquareMeters);
             v1.setTemperature(0);
@@ -39,7 +38,6 @@ public class ForwardFiniteDifferenceSimulatorText {
             g.addEdge(v0, v1);
             v0 = v1;
         }
-        thicknessMeters = 0.01;
         for (int i = 0; i < 2; ++i) {
             VertexType v1 = new UnboundedVertex(Material.DOUGLAS_FIR, thicknessMeters, areaSquareMeters);
             v1.setTemperature(0);
@@ -56,8 +54,9 @@ public class ForwardFiniteDifferenceSimulatorText {
         g.addEdge(v0, v1);
         v0 = v1;
 
+        // TODO: make area a property of an edge.
         // 500 cubic meters == about 2500 sq ft, 8 ft ceiling
-        v1 = new InternalHeatVertex(Material.AIR_BULK_MIXED, 10, 50, new InternalHeat() {
+        v1 = new InternalHeatVertex(Material.AIR_BULK_MIXED, 1, areaSquareMeters, new InternalHeat() {
 
             @Override
             public double heatWatts() {
@@ -83,8 +82,7 @@ public class ForwardFiniteDifferenceSimulatorText {
     public void directFiniteDifferenceGraph() {
         UndirectedGraph<VertexType, EdgeType> g = makeGraph();
         ForwardFiniteDifferenceSimulator s = new ForwardFiniteDifferenceSimulator();
-        /* 60 second steps */
-        s.doit(g, 60, 600000);
+        s.doit(g, 0.001, 1000000);
     }
 
     @Test
