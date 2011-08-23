@@ -451,7 +451,7 @@ public class ForwardFiniteDifferenceSimulatorTest {
     }
 
     /**
-     * 
+     * steady state resistive node
      */
     @Test
     public void pureK() {
@@ -489,8 +489,8 @@ public class ForwardFiniteDifferenceSimulatorTest {
         });
         g.addVertex(v2);
         g.addEdge(v1, v2, new EdgeType(10));
-        Assert.assertEquals(10, v1.getVolume(), 0.01);
-        Assert.assertEquals(975, v1.getNodeHeatCapacity(), 0.01);
+        Assert.assertEquals(10, v2.getVolume(), 0.01);
+        Assert.assertEquals(35415, v2.getNodeHeatCapacity(), 0.1);
 
         // run it for a long time, to get equilibrium.
         ForwardFiniteDifferenceSimulator s = new ForwardFiniteDifferenceSimulator();
@@ -508,6 +508,92 @@ public class ForwardFiniteDifferenceSimulatorTest {
         Assert.assertEquals(151.51, x, 0.1);
         // confirm average insulator temperature is half the range
         Assert.assertEquals(151.51 / 2, y, 0.1);
+        Assert.assertFalse(iter.hasNext());
+    }
+
+    /**
+     * steady state resistive node
+     */
+    @Test
+    public void pureKThreeNodes() {
+        HeatGraph g = new HeatGraph();
+
+        // supply heat at a fixed rate on one end
+        VertexType v0 = new InternalHeatVertex(Material.IRON, 1, 10, new InternalHeat() {
+            @Override
+            public double heatWatts() {
+                return 50;
+            }
+        });
+        g.addVertex(v0);
+        Assert.assertEquals(10, v0.getVolume(), 0.01);
+        Assert.assertEquals(35415, v0.getNodeHeatCapacity(), 0.01);
+
+        // a three-node insulator in the middle, same total thickness as above
+        VertexType v1 = new UnboundedVertex(Material.STYROFOAM, 0.33333333, 10);
+        v1.setTemperature(0);
+        g.addVertex(v1);
+        g.addEdge(v0, v1, new EdgeType(10));
+        Assert.assertEquals(3.33, v1.getVolume(), 0.01);
+        Assert.assertEquals(325, v1.getNodeHeatCapacity(), 0.01);
+        // k of 0.033, thickness 1m, so U of 0.033 W/m2K, area of 10m, 0.33 W/K
+        Assert.assertEquals(1, v1.getConductance(), 0.01);
+        v0 = v1;
+
+        v1 = new UnboundedVertex(Material.STYROFOAM, 0.33333333, 10);
+        v1.setTemperature(0);
+        g.addVertex(v1);
+        g.addEdge(v0, v1, new EdgeType(10));
+        Assert.assertEquals(3.33, v1.getVolume(), 0.01);
+        Assert.assertEquals(325, v1.getNodeHeatCapacity(), 0.01);
+        // k of 0.033, thickness 1m, so U of 0.033 W/m2K, area of 10m, 0.33 W/K
+        Assert.assertEquals(1, v1.getConductance(), 0.01);
+        v0 = v1;
+
+        v1 = new UnboundedVertex(Material.STYROFOAM, 0.33333333, 10);
+        v1.setTemperature(0);
+        g.addVertex(v1);
+        g.addEdge(v0, v1, new EdgeType(10));
+        Assert.assertEquals(3.33, v1.getVolume(), 0.01);
+        Assert.assertEquals(325, v1.getNodeHeatCapacity(), 0.01);
+        // k of 0.033, thickness 1m, so U of 0.033 W/m2K, area of 10m, 0.33 W/K
+        Assert.assertEquals(1, v1.getConductance(), 0.01);
+
+        // Dirichlet boundary on the other end
+        VertexType v2 = new DirichletVertex(Material.IRON, 1, 10, new TemperatureSource() {
+
+            @Override
+            double temperature() {
+                return 0;
+            }
+
+        });
+        g.addVertex(v2);
+        g.addEdge(v1, v2, new EdgeType(10));
+        Assert.assertEquals(10, v2.getVolume(), 0.01);
+        Assert.assertEquals(35415, v2.getNodeHeatCapacity(), 0.01);
+
+        // run it for a long time, to get equilibrium.
+        ForwardFiniteDifferenceSimulator s = new ForwardFiniteDifferenceSimulator();
+        s.doit(g, 100, 20000);
+
+        Assert.assertEquals(5, g.vertexSet().size());
+        Iterator<VertexType> iter = g.vertexSet().iterator();
+        double x = iter.next().getTemperature();
+        double y = iter.next().getTemperature();
+        double z = iter.next().getTemperature();
+        double a = iter.next().getTemperature();
+        double b = iter.next().getTemperature();
+
+        // confirm dirichlet condition of zero
+        Assert.assertEquals(0, b, 0.01);
+        // insulator node is the controlling node.
+        // so, with 50W across it, delta T is 151.51
+        Assert.assertEquals(151.51, x, 0.1);
+        // confirm insulator center values
+        Assert.assertEquals(151.51 * 5 / 6, y, 0.1);
+        Assert.assertEquals(151.51 / 6, a, 0.1);
+        Assert.assertEquals(151.51 / 2, z, 0.1);
         Assert.assertFalse(iter.hasNext());
     }
 }
