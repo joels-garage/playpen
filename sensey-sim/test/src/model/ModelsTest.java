@@ -58,14 +58,14 @@ public class ModelsTest {
         Assert.assertFalse(iter.hasNext());
         // dirichlet
         Assert.assertEquals(305, x, 1);
-        Assert.assertEquals(258, y, 1);
-        Assert.assertEquals(211, z, 1);
+        Assert.assertEquals(291, y, 1);
+        Assert.assertEquals(276, z, 1);
         // analytically ...
         double volume = 250 * 2.5;
         double ACH = 0.5;
         double m3PerSec = volume * ACH / 3600;
         double wattsPerKelvin = 1006 * 1.225 * m3PerSec;
-        double watts = 10;
+        double watts = 3000;
         double deltaTKelvin = watts / wattsPerKelvin;
         Assert.assertEquals(deltaTKelvin, x - z, 1);
     }

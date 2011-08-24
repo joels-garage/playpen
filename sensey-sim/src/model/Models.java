@@ -344,8 +344,8 @@ public class Models {
                 wallAreaSquareMeters, new InternalHeat() {
                     @Override
                     public double heatWatts() {
-                        // steady state
-                        return -10;
+                        // about one ton
+                        return -3000;
                     }
                 });
         inside.setTemperature(OATK);
