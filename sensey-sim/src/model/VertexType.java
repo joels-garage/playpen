@@ -23,6 +23,14 @@ public abstract class VertexType {
     private final double area;
     public final String name;
 
+    /**
+     * 
+     * @param name
+     * @param material
+     * @param thickness
+     * @param area
+     */
+
     public VertexType(String name, Material material, double thickness, double area) {
         this.name = name;
         this.material = material;
@@ -72,7 +80,7 @@ public abstract class VertexType {
 
     @Override
     public String toString() {
-        return String.format("name: %20s class: %20s material: %20s thickness: %6.3f temperature: %12.6f", name,
+        return String.format("name: %25s class: %20s material: %20s thickness: %6.3f temperature: %12.6f", name,
                 getClass().getSimpleName(), material, thickness, getTemperature());
     }
 }

@@ -11,6 +11,12 @@ public class Material {
      * TODO: make a type for this rather than this hokey thing
      */
     public static final Material AIR_BOUNDARY_LAYER = new Material("Air Boundary Layer", 0.05, 1.225, 1006);
+    /** total guess of 17 w/m2k, might be too high. */
+    public static final Material CONVECTION = new Material("Convection", 0.17, 1.225, 1006);
+
+    /** for radiative transfer around 300 k. */
+    public static final Material RADIATION = new Material("Radiation", 0.06, 1.225, 1006);
+
     /**
      * actual boundary layer thickness is like 1cm.
      * 

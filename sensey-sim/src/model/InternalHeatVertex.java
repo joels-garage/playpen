@@ -7,8 +7,8 @@ package model;
 public class InternalHeatVertex extends UnboundedVertex {
     private final InternalHeat internalHeat;
 
-    public InternalHeatVertex(Material material, double thickness, double area, InternalHeat internalHeat) {
-        super(material, thickness, area);
+    public InternalHeatVertex(String name, Material material, double thickness, double area, InternalHeat internalHeat) {
+        super(name, material, thickness, area);
         this.internalHeat = internalHeat;
     }
 

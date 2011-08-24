@@ -19,7 +19,7 @@ public class ForwardFiniteDifferenceSimulatorTest {
     @Test
     public void oneNodeOneSecSteps() {
         HeatGraph g = new HeatGraph();
-        VertexType v0 = new InternalHeatVertex(Material.FOR_TESTING, 1, 1, new InternalHeat() {
+        VertexType v0 = new InternalHeatVertex("v1", Material.FOR_TESTING, 1, 1, new InternalHeat() {
             @Override
             public double heatWatts() {
                 return 50;
@@ -39,7 +39,7 @@ public class ForwardFiniteDifferenceSimulatorTest {
     @Test
     public void oneNodeShortSteps() {
         HeatGraph g = new HeatGraph();
-        VertexType v0 = new InternalHeatVertex(Material.FOR_TESTING, 1, 1, new InternalHeat() {
+        VertexType v0 = new InternalHeatVertex("v1", Material.FOR_TESTING, 1, 1, new InternalHeat() {
             @Override
             public double heatWatts() {
                 return 50;
@@ -67,7 +67,7 @@ public class ForwardFiniteDifferenceSimulatorTest {
     @Test
     public void oneNodeMoreVolume() {
         HeatGraph g = new HeatGraph();
-        VertexType v0 = new InternalHeatVertex(Material.FOR_TESTING, 1, 10, new InternalHeat() {
+        VertexType v0 = new InternalHeatVertex("v1", Material.FOR_TESTING, 1, 10, new InternalHeat() {
             @Override
             public double heatWatts() {
                 return 50;
@@ -95,7 +95,7 @@ public class ForwardFiniteDifferenceSimulatorTest {
     @Test
     public void oneNodeBulkAir() {
         HeatGraph g = new HeatGraph();
-        VertexType v0 = new InternalHeatVertex(Material.AIR_BULK_MIXED, 1, 10, new InternalHeat() {
+        VertexType v0 = new InternalHeatVertex("v1", Material.AIR_BULK_MIXED, 1, 10, new InternalHeat() {
             @Override
             public double heatWatts() {
                 return 50;
@@ -127,7 +127,7 @@ public class ForwardFiniteDifferenceSimulatorTest {
     @Test
     public void twoNodesOneEdge() {
         HeatGraph g = new HeatGraph();
-        VertexType v0 = new InternalHeatVertex(Material.FOR_TESTING, 1, 10, new InternalHeat() {
+        VertexType v0 = new InternalHeatVertex("v1", Material.FOR_TESTING, 1, 10, new InternalHeat() {
             @Override
             public double heatWatts() {
                 return 5000;
@@ -137,7 +137,7 @@ public class ForwardFiniteDifferenceSimulatorTest {
         Assert.assertEquals(10, v0.getVolume(), 0.01);
         Assert.assertEquals(1000000, v0.getNodeHeatCapacity(), 0.01);
 
-        VertexType v1 = new UnboundedVertex(Material.FOR_TESTING, 1, 10);
+        VertexType v1 = new UnboundedVertex("v1", Material.FOR_TESTING, 1, 10);
         v1.setTemperature(0);
         g.addVertex(v1);
         Assert.assertEquals(10, v1.getVolume(), 0.01);
@@ -165,7 +165,7 @@ public class ForwardFiniteDifferenceSimulatorTest {
     @Test
     public void twoNodesTwoEdgesSameTotalArea() {
         HeatGraph g = new HeatGraph();
-        VertexType v0 = new InternalHeatVertex(Material.FOR_TESTING, 1, 10, new InternalHeat() {
+        VertexType v0 = new InternalHeatVertex("v1", Material.FOR_TESTING, 1, 10, new InternalHeat() {
             @Override
             public double heatWatts() {
                 return 5000;
@@ -175,7 +175,7 @@ public class ForwardFiniteDifferenceSimulatorTest {
         Assert.assertEquals(10, v0.getVolume(), 0.01);
         Assert.assertEquals(1000000, v0.getNodeHeatCapacity(), 0.01);
 
-        VertexType v1 = new UnboundedVertex(Material.FOR_TESTING, 1, 10);
+        VertexType v1 = new UnboundedVertex("v1", Material.FOR_TESTING, 1, 10);
         v1.setTemperature(0);
         g.addVertex(v1);
         Assert.assertEquals(10, v1.getVolume(), 0.01);
@@ -204,7 +204,7 @@ public class ForwardFiniteDifferenceSimulatorTest {
     @Test
     public void twoNodesTwoEdgesDifferentArea() {
         HeatGraph g = new HeatGraph();
-        VertexType v0 = new InternalHeatVertex(Material.FOR_TESTING, 1, 10, new InternalHeat() {
+        VertexType v0 = new InternalHeatVertex("heated", Material.FOR_TESTING, 1, 10, new InternalHeat() {
             @Override
             public double heatWatts() {
                 return 5000;
@@ -214,7 +214,7 @@ public class ForwardFiniteDifferenceSimulatorTest {
         Assert.assertEquals(10, v0.getVolume(), 0.01);
         Assert.assertEquals(1000000, v0.getNodeHeatCapacity(), 0.01);
 
-        VertexType v1 = new UnboundedVertex(Material.FOR_TESTING, 1, 10);
+        VertexType v1 = new UnboundedVertex("v1", Material.FOR_TESTING, 1, 10);
         v1.setTemperature(0);
         g.addVertex(v1);
         Assert.assertEquals(10, v1.getVolume(), 0.01);
@@ -243,7 +243,7 @@ public class ForwardFiniteDifferenceSimulatorTest {
     @Test
     public void threeNodesTwoEdgesSameArea() {
         HeatGraph g = new HeatGraph();
-        VertexType v0 = new InternalHeatVertex(Material.FOR_TESTING, 1, 10, new InternalHeat() {
+        VertexType v0 = new InternalHeatVertex("heated", Material.FOR_TESTING, 1, 10, new InternalHeat() {
             @Override
             public double heatWatts() {
                 return 5000;
@@ -255,21 +255,20 @@ public class ForwardFiniteDifferenceSimulatorTest {
 
         // each of these is the same size as the above so we can read the Q balance from T
 
-        VertexType v1 = new UnboundedVertex(Material.FOR_TESTING, 1, 10);
+        VertexType v1 = new UnboundedVertex("v1", Material.FOR_TESTING, 1, 10);
         v1.setTemperature(0);
         g.addVertex(v1);
         g.addEdge(v0, v1, new EdgeType(50));
         Assert.assertEquals(10, v1.getVolume(), 0.01);
         Assert.assertEquals(1000000, v1.getNodeHeatCapacity(), 0.01);
 
-        v1 = new UnboundedVertex(Material.FOR_TESTING, 1, 10);
+        v1 = new UnboundedVertex("v1", Material.FOR_TESTING, 1, 10);
         v1.setTemperature(0);
         g.addVertex(v1);
         g.addEdge(v0, v1, new EdgeType(50));
         Assert.assertEquals(10, v1.getVolume(), 0.01);
         Assert.assertEquals(1000000, v1.getNodeHeatCapacity(), 0.01);
 
-  
         ForwardFiniteDifferenceSimulator s = new ForwardFiniteDifferenceSimulator();
         s.doit(g, 1, 1000);
         Assert.assertEquals(3, g.vertexSet().size());
@@ -294,7 +293,7 @@ public class ForwardFiniteDifferenceSimulatorTest {
     @Test
     public void threeNodesTwoEdgesDifferentAreas() {
         HeatGraph g = new HeatGraph();
-        VertexType v0 = new InternalHeatVertex(Material.FOR_TESTING, 1, 10, new InternalHeat() {
+        VertexType v0 = new InternalHeatVertex("heated", Material.FOR_TESTING, 1, 10, new InternalHeat() {
             @Override
             public double heatWatts() {
                 return 5000;
@@ -304,7 +303,7 @@ public class ForwardFiniteDifferenceSimulatorTest {
         Assert.assertEquals(10, v0.getVolume(), 0.01);
         Assert.assertEquals(1000000, v0.getNodeHeatCapacity(), 0.01);
 
-        VertexType v1 = new UnboundedVertex(Material.FOR_TESTING, 1, 10);
+        VertexType v1 = new UnboundedVertex("v1", Material.FOR_TESTING, 1, 10);
         v1.setTemperature(0);
         g.addVertex(v1);
         // lots of conduction
@@ -312,7 +311,7 @@ public class ForwardFiniteDifferenceSimulatorTest {
         Assert.assertEquals(10, v1.getVolume(), 0.01);
         Assert.assertEquals(1000000, v1.getNodeHeatCapacity(), 0.01);
 
-        v1 = new UnboundedVertex(Material.FOR_TESTING, 1, 10);
+        v1 = new UnboundedVertex("v1", Material.FOR_TESTING, 1, 10);
         v1.setTemperature(0);
         g.addVertex(v1);
         // less conduction
@@ -353,7 +352,7 @@ public class ForwardFiniteDifferenceSimulatorTest {
         HeatGraph g = new HeatGraph();
 
         // supply heat at a fixed rate on one end
-        VertexType v0 = new InternalHeatVertex(Material.IRON, 1, 10, new InternalHeat() {
+        VertexType v0 = new InternalHeatVertex("iron heated", Material.IRON, 1, 10, new InternalHeat() {
             @Override
             public double heatWatts() {
                 return 50;
@@ -364,7 +363,7 @@ public class ForwardFiniteDifferenceSimulatorTest {
         Assert.assertEquals(35415000, v0.getNodeHeatCapacity(), 1e3);
 
         // an insulator in the middle
-        VertexType v1 = new UnboundedVertex(Material.STYROFOAM, 1, 10);
+        VertexType v1 = new UnboundedVertex("foam", Material.STYROFOAM, 1, 10);
         v1.setTemperature(0);
         g.addVertex(v1);
         g.addEdge(v0, v1, new EdgeType(10));
@@ -374,7 +373,7 @@ public class ForwardFiniteDifferenceSimulatorTest {
         Assert.assertEquals(0.33, v1.getConductance(), 0.01);
 
         // Dirichlet boundary on the other end
-        VertexType v2 = new DirichletVertex(Material.IRON, 1, 10, new TemperatureSource() {
+        VertexType v2 = new DirichletVertex("iron dirichlet", Material.IRON, 1, 10, new TemperatureSource() {
 
             @Override
             double temperature() {
@@ -414,7 +413,7 @@ public class ForwardFiniteDifferenceSimulatorTest {
         HeatGraph g = new HeatGraph();
 
         // supply heat at a fixed rate on one end
-        VertexType v0 = new InternalHeatVertex(Material.IRON, 1, 10, new InternalHeat() {
+        VertexType v0 = new InternalHeatVertex("iron heated", Material.IRON, 1, 10, new InternalHeat() {
             @Override
             public double heatWatts() {
                 return 50;
@@ -425,7 +424,7 @@ public class ForwardFiniteDifferenceSimulatorTest {
         Assert.assertEquals(35415000, v0.getNodeHeatCapacity(), 1e3);
 
         // a three-node insulator in the middle, same total thickness as above
-        VertexType v1 = new UnboundedVertex(Material.STYROFOAM, 0.33333333, 10);
+        VertexType v1 = new UnboundedVertex("foam", Material.STYROFOAM, 0.33333333, 10);
         v1.setTemperature(0);
         g.addVertex(v1);
         g.addEdge(v0, v1, new EdgeType(10));
@@ -435,7 +434,7 @@ public class ForwardFiniteDifferenceSimulatorTest {
         Assert.assertEquals(1, v1.getConductance(), 0.01);
         v0 = v1;
 
-        v1 = new UnboundedVertex(Material.STYROFOAM, 0.33333333, 10);
+        v1 = new UnboundedVertex("foam", Material.STYROFOAM, 0.33333333, 10);
         v1.setTemperature(0);
         g.addVertex(v1);
         g.addEdge(v0, v1, new EdgeType(10));
@@ -445,7 +444,7 @@ public class ForwardFiniteDifferenceSimulatorTest {
         Assert.assertEquals(1, v1.getConductance(), 0.01);
         v0 = v1;
 
-        v1 = new UnboundedVertex(Material.STYROFOAM, 0.33333333, 10);
+        v1 = new UnboundedVertex("foam", Material.STYROFOAM, 0.33333333, 10);
         v1.setTemperature(0);
         g.addVertex(v1);
         g.addEdge(v0, v1, new EdgeType(10));
@@ -455,7 +454,7 @@ public class ForwardFiniteDifferenceSimulatorTest {
         Assert.assertEquals(1, v1.getConductance(), 0.01);
 
         // Dirichlet boundary on the other end
-        VertexType v2 = new DirichletVertex(Material.IRON, 1, 10, new TemperatureSource() {
+        VertexType v2 = new DirichletVertex("iron dirichlet", Material.IRON, 1, 10, new TemperatureSource() {
 
             @Override
             double temperature() {

@@ -104,15 +104,29 @@ public class ModelsTest {
     }
     
     /**
-     *
+     * bleah, this is wrong, needs convective loss from the roof.
+     * 
+     * use a different boundary; 17 w/m2k rather than 5.
+     * 
+     * ok, that's not enough.  use radiation.
+     * 
+     * see http://eetd.lbl.gov/coolroof/ref_01.htm
+     * 
+     * sky is 10K less than OAT.
+     * 
+     * radiative cooling at roughly OAT is 6.1W/m2K times difference between surface and sky, i.e. ignore T^4.
+     * 
+     * so, always subtract 61W/m2, all the time, for sky-facing surfaces.
+     * 
+     * and also it says that convective loss is 12.4W/m2K, not 17.
      */
     @Test
     public void wallAndCeilingConductionAndSolarAbsorption() {
         HeatGraph g = Models.wallAndCeilingConductionAndSolarAbsorption();
         ForwardFiniteDifferenceSimulator s = new ForwardFiniteDifferenceSimulator();
-        s.doit(g, 1, 100000);
+        s.doit(g, 0.1, 100000);
         // 295K is about 72F.
-        verifyMaxAndMin(295, 305, g);
+        // todo: roof surface temp should be about 350 kelvin, max,  maybe 365 is close enough.
+        verifyMaxAndMin(295, 365, g);
     }
-
 }
