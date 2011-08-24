@@ -187,4 +187,39 @@ public class ModelsTest {
             }
         }
     }
+    
+    /**
+     * oops, now the slab dominates.
+     */
+    @Test
+    public void switchableACWithSlab() {
+        final double setpointHigh = 298;
+        final double setpointLow = 294;
+        final double acOutput = -12000;
+        SwitchableAC ac = new SwitchableAC(acOutput);
+        // start in the on (cooling) state.
+        ac.on = true;
+        VertexObserver obs = new VertexObserver();
+        HeatGraph g = Models.wallAndCeilingAndFloorConductionAndSolarAbsorption(ac, obs);
+        ForwardFiniteDifferenceSimulator s = new ForwardFiniteDifferenceSimulator();
+        // first get kinda close to steady state
+        s.doit(g, 0.1, 100000, false);
+        // this is the control loop
+        for (int i = 0; i < 1440; ++i) {
+            // 0.1 second steps, 600 of them
+            double stepSizeSec = 0.1;
+            int stepsPerControl = 600;
+            // so control is evaluated once per minute.
+            s.doit(g, stepSizeSec, stepsPerControl, false);
+            double t = obs.getVertex().getTemperature();
+            logger.info(String.format("%5d %8.3f", i, obs.getVertex().getTemperature()));
+            if (t < setpointLow) {
+                ac.on = false;
+            } else if (t > setpointHigh) {
+                ac.on = true;
+            } else {
+                // it's somewhere in the deadband, doing whatever it was doing before; leave it alone.
+            }
+        }
+    }
 }
