@@ -7,8 +7,8 @@ package model;
  * 
  */
 public class UnboundedVertex extends VertexType {
-    public UnboundedVertex(Material material, double thickness, double area) {
-        super(material, thickness, area);
+    public UnboundedVertex(String name, Material material, double thickness, double area) {
+        super(name, material, thickness, area);
     }
 
 }

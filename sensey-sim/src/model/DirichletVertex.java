@@ -8,8 +8,8 @@ package model;
 public class DirichletVertex extends VertexType {
     private final TemperatureSource temperatureSource;
 
-    public DirichletVertex(Material material, double thickness, double area, TemperatureSource temperatureSource) {
-        super(material, thickness, area);
+    public DirichletVertex(String name, Material material, double thickness, double area, TemperatureSource temperatureSource) {
+        super(name, material, thickness, area);
         this.temperatureSource = temperatureSource;
     }
 

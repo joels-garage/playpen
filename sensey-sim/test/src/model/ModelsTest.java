@@ -102,5 +102,17 @@ public class ModelsTest {
         // 295K is about 72F.
         verifyMaxAndMin(295, 305, g);
     }
+    
+    /**
+     *
+     */
+    @Test
+    public void wallAndCeilingConductionAndSolarAbsorption() {
+        HeatGraph g = Models.wallAndCeilingConductionAndSolarAbsorption();
+        ForwardFiniteDifferenceSimulator s = new ForwardFiniteDifferenceSimulator();
+        s.doit(g, 1, 100000);
+        // 295K is about 72F.
+        verifyMaxAndMin(295, 305, g);
+    }
 
 }

@@ -21,8 +21,10 @@ public abstract class VertexType {
      * used for volume calculation only, for heat capacity. m^2
      */
     private final double area;
+    public final String name;
 
-    public VertexType(Material material, double thickness, double area) {
+    public VertexType(String name, Material material, double thickness, double area) {
+        this.name = name;
         this.material = material;
         this.thickness = thickness;
         this.area = area;
@@ -70,7 +72,7 @@ public abstract class VertexType {
 
     @Override
     public String toString() {
-        return String.format("class: %20s material: %20s thickness: %6.3f temperature: %12.6f", getClass()
-                .getSimpleName(), material, thickness, getTemperature());
+        return String.format("name: %20s class: %20s material: %20s thickness: %6.3f temperature: %12.6f", name,
+                getClass().getSimpleName(), material, thickness, getTemperature());
     }
 }

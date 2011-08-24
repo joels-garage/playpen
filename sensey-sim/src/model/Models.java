@@ -10,7 +10,7 @@ public class Models {
         double areaSquareMeters = 500;
         HeatGraph g = new HeatGraph();
         double thicknessMeters = 0.01;
-        VertexType v0 = new DirichletVertex(Material.DOUGLAS_FIR, thicknessMeters, areaSquareMeters,
+        VertexType v0 = new DirichletVertex("v0", Material.DOUGLAS_FIR, thicknessMeters, areaSquareMeters,
                 new TemperatureSource() {
                     @Override
                     double temperature() {
@@ -79,36 +79,37 @@ public class Models {
         HeatGraph g = new HeatGraph();
 
         // outside air; dimensions don't matter
-        VertexType v0 = new DirichletVertex(Material.AIR_BULK_MIXED, 10, wallAreaSquareMeters, new TemperatureSource() {
-            @Override
-            double temperature() {
-                // a realistic summer temperature
-                // TODO: variable temperature
-                return OATK;
-            }
+        VertexType v0 = new DirichletVertex("outside air", Material.AIR_BULK_MIXED, 10, wallAreaSquareMeters,
+                new TemperatureSource() {
+                    @Override
+                    double temperature() {
+                        // a realistic summer temperature
+                        // TODO: variable temperature
+                        return OATK;
+                    }
 
-        });
+                });
         g.addVertex(v0);
 
         // outside boundary layer for walls
-        VertexType v1 = new UnboundedVertex(Material.AIR_BOUNDARY_LAYER, Material.AIR_BOUNDARY_LAYER_THICKNESS,
-                wallAreaSquareMeters);
+        VertexType v1 = new UnboundedVertex("outside boundary", Material.AIR_BOUNDARY_LAYER,
+                Material.AIR_BOUNDARY_LAYER_THICKNESS, wallAreaSquareMeters);
         v1.setTemperature(OATK);
         g.addVertex(v1);
         g.addEdge(v0, v1, new EdgeType(wallAreaSquareMeters));
         v0 = v1;
 
         // outside layer of wall
-        v1 = new UnboundedVertex(Material.DOUGLAS_FIR, 0.01, wallAreaSquareMeters);
+        v1 = new UnboundedVertex("sheathing", Material.DOUGLAS_FIR, 0.01, wallAreaSquareMeters);
         v1.setTemperature(OATK);
         g.addVertex(v1);
         g.addEdge(v0, v1, new EdgeType(wallAreaSquareMeters));
         v0 = v1;
 
         // insulating part of wall
-        v1 = new UnboundedVertex(Material.STYROFOAM, 0.09, wallAreaSquareMeters * 0.8);
+        v1 = new UnboundedVertex("insulation", Material.STYROFOAM, 0.09, wallAreaSquareMeters * 0.8);
         // stud part of wall
-        VertexType v2 = new UnboundedVertex(Material.DOUGLAS_FIR, 0.09, wallAreaSquareMeters * 0.2);
+        VertexType v2 = new UnboundedVertex("stud", Material.DOUGLAS_FIR, 0.09, wallAreaSquareMeters * 0.2);
         v1.setTemperature(OATK);
         v2.setTemperature(OATK);
         g.addVertex(v1);
@@ -120,7 +121,7 @@ public class Models {
         g.addEdge(v0, v2, new EdgeType(wallAreaSquareMeters * 0.2));
 
         // inside layer of wall
-        VertexType v4 = new UnboundedVertex(Material.DOUGLAS_FIR, 0.01, wallAreaSquareMeters);
+        VertexType v4 = new UnboundedVertex("paneling", Material.DOUGLAS_FIR, 0.01, wallAreaSquareMeters);
         v4.setTemperature(OATK);
         g.addVertex(v4);
         // edge from foam
@@ -131,7 +132,7 @@ public class Models {
         v0 = v4;
 
         // inside boundary layer for walls
-        v1 = new UnboundedVertex(Material.AIR_BOUNDARY_LAYER, Material.AIR_BOUNDARY_LAYER_THICKNESS,
+        v1 = new UnboundedVertex("inside boundary", Material.AIR_BOUNDARY_LAYER, Material.AIR_BOUNDARY_LAYER_THICKNESS,
                 wallAreaSquareMeters);
         v1.setTemperature(OATK);
         g.addVertex(v1);
@@ -166,8 +167,8 @@ public class Models {
         HeatGraph g = new HeatGraph();
 
         // outside air; dimensions don't matter
-        VertexType exteriorVertex = new DirichletVertex(Material.AIR_BULK_MIXED, 10, wallAreaSquareMeters,
-                new TemperatureSource() {
+        VertexType exteriorVertex = new DirichletVertex("outside air", Material.AIR_BULK_MIXED, 10,
+                wallAreaSquareMeters, new TemperatureSource() {
                     @Override
                     double temperature() {
                         // a realistic summer temperature
@@ -194,7 +195,7 @@ public class Models {
         {
 
             // outside boundary layer for walls
-            VertexType v1 = new UnboundedVertex(Material.AIR_BOUNDARY_LAYER, Material.AIR_BOUNDARY_LAYER_THICKNESS,
+            VertexType v1 = new UnboundedVertex("outside boundary", Material.AIR_BOUNDARY_LAYER, Material.AIR_BOUNDARY_LAYER_THICKNESS,
                     wallAreaSquareMeters);
             v1.setTemperature(OATK);
             g.addVertex(v1);
@@ -202,16 +203,16 @@ public class Models {
             VertexType v0 = v1;
 
             // outside layer of wall
-            v1 = new UnboundedVertex(Material.DOUGLAS_FIR, 0.01, wallAreaSquareMeters);
+            v1 = new UnboundedVertex("sheathing", Material.DOUGLAS_FIR, 0.01, wallAreaSquareMeters);
             v1.setTemperature(OATK);
             g.addVertex(v1);
             g.addEdge(v0, v1, new EdgeType(wallAreaSquareMeters));
             v0 = v1;
 
             // insulating part of wall
-            v1 = new UnboundedVertex(Material.STYROFOAM, 0.09, wallAreaSquareMeters * 0.8);
+            v1 = new UnboundedVertex("insulation", Material.STYROFOAM, 0.09, wallAreaSquareMeters * 0.8);
             // stud part of wall
-            VertexType v2 = new UnboundedVertex(Material.DOUGLAS_FIR, 0.09, wallAreaSquareMeters * 0.2);
+            VertexType v2 = new UnboundedVertex("stud", Material.DOUGLAS_FIR, 0.09, wallAreaSquareMeters * 0.2);
             v1.setTemperature(OATK);
             v2.setTemperature(OATK);
             g.addVertex(v1);
@@ -223,7 +224,7 @@ public class Models {
             g.addEdge(v0, v2, new EdgeType(wallAreaSquareMeters * 0.2));
 
             // inside layer of wall
-            VertexType v4 = new UnboundedVertex(Material.DOUGLAS_FIR, 0.01, wallAreaSquareMeters);
+            VertexType v4 = new UnboundedVertex("paneling", Material.DOUGLAS_FIR, 0.01, wallAreaSquareMeters);
             v4.setTemperature(OATK);
             g.addVertex(v4);
             // edge from foam
@@ -234,7 +235,7 @@ public class Models {
             v0 = v4;
 
             // inside boundary layer for walls
-            v1 = new UnboundedVertex(Material.AIR_BOUNDARY_LAYER, Material.AIR_BOUNDARY_LAYER_THICKNESS,
+            v1 = new UnboundedVertex("inside wall boundary", Material.AIR_BOUNDARY_LAYER, Material.AIR_BOUNDARY_LAYER_THICKNESS,
                     wallAreaSquareMeters);
             v1.setTemperature(OATK);
             g.addVertex(v1);
@@ -247,7 +248,7 @@ public class Models {
         // ceiling
         {
             // outside boundary layer for roof
-            VertexType v1 = new UnboundedVertex(Material.AIR_BOUNDARY_LAYER, Material.AIR_BOUNDARY_LAYER_THICKNESS,
+            VertexType v1 = new UnboundedVertex("outside roof boundary", Material.AIR_BOUNDARY_LAYER, Material.AIR_BOUNDARY_LAYER_THICKNESS,
                     floorAreaSquareMeters);
             v1.setTemperature(OATK);
             g.addVertex(v1);
@@ -255,16 +256,16 @@ public class Models {
             VertexType v0 = v1;
 
             // outside layer of ceiling
-            v1 = new UnboundedVertex(Material.DOUGLAS_FIR, 0.01, floorAreaSquareMeters);
+            v1 = new UnboundedVertex("shingles", Material.DOUGLAS_FIR, 0.01, floorAreaSquareMeters);
             v1.setTemperature(OATK);
             g.addVertex(v1);
             g.addEdge(v0, v1, new EdgeType(floorAreaSquareMeters));
             v0 = v1;
 
             // insulating part of ceiling
-            v1 = new UnboundedVertex(Material.STYROFOAM, 0.09, floorAreaSquareMeters * 0.8);
+            v1 = new UnboundedVertex("ceiling insulation", Material.STYROFOAM, 0.09, floorAreaSquareMeters * 0.8);
             // stud part of wall
-            VertexType v2 = new UnboundedVertex(Material.DOUGLAS_FIR, 0.09, floorAreaSquareMeters * 0.2);
+            VertexType v2 = new UnboundedVertex("rafters", Material.DOUGLAS_FIR, 0.09, floorAreaSquareMeters * 0.2);
             v1.setTemperature(OATK);
             v2.setTemperature(OATK);
             g.addVertex(v1);
@@ -276,7 +277,7 @@ public class Models {
             g.addEdge(v0, v2, new EdgeType(floorAreaSquareMeters * 0.2));
 
             // inside layer of wall
-            VertexType v4 = new UnboundedVertex(Material.DOUGLAS_FIR, 0.01, floorAreaSquareMeters);
+            VertexType v4 = new UnboundedVertex("ceiling paneling", Material.DOUGLAS_FIR, 0.01, floorAreaSquareMeters);
             v4.setTemperature(OATK);
             g.addVertex(v4);
             // edge from foam
@@ -287,7 +288,7 @@ public class Models {
             v0 = v4;
 
             // inside boundary layer for walls
-            v1 = new UnboundedVertex(Material.AIR_BOUNDARY_LAYER, Material.AIR_BOUNDARY_LAYER_THICKNESS,
+            v1 = new UnboundedVertex("ceiling boundary", Material.AIR_BOUNDARY_LAYER, Material.AIR_BOUNDARY_LAYER_THICKNESS,
                     floorAreaSquareMeters);
             v1.setTemperature(OATK);
             g.addVertex(v1);
@@ -478,6 +479,168 @@ public class Models {
 
             // outside layer of ceiling
             v1 = new UnboundedVertex(Material.DOUGLAS_FIR, 0.01, floorAreaSquareMeters);
+            v1.setTemperature(OATK);
+            g.addVertex(v1);
+            g.addEdge(v0, v1, new EdgeType(floorAreaSquareMeters));
+            v0 = v1;
+
+            // insulating part of ceiling
+            v1 = new UnboundedVertex(Material.STYROFOAM, 0.09, floorAreaSquareMeters * 0.8);
+            // stud part of wall
+            VertexType v2 = new UnboundedVertex(Material.DOUGLAS_FIR, 0.09, floorAreaSquareMeters * 0.2);
+            v1.setTemperature(OATK);
+            v2.setTemperature(OATK);
+            g.addVertex(v1);
+            g.addVertex(v2);
+
+            // edge to foam
+            g.addEdge(v0, v1, new EdgeType(floorAreaSquareMeters * 0.8));
+            // edge to frame
+            g.addEdge(v0, v2, new EdgeType(floorAreaSquareMeters * 0.2));
+
+            // inside layer of wall
+            VertexType v4 = new UnboundedVertex(Material.DOUGLAS_FIR, 0.01, floorAreaSquareMeters);
+            v4.setTemperature(OATK);
+            g.addVertex(v4);
+            // edge from foam
+            g.addEdge(v1, v4, new EdgeType(floorAreaSquareMeters * 0.8));
+            // edge from frame
+            g.addEdge(v2, v4, new EdgeType(floorAreaSquareMeters * 0.2));
+
+            v0 = v4;
+
+            // inside boundary layer for walls
+            v1 = new UnboundedVertex(Material.AIR_BOUNDARY_LAYER, Material.AIR_BOUNDARY_LAYER_THICKNESS,
+                    floorAreaSquareMeters);
+            v1.setTemperature(OATK);
+            g.addVertex(v1);
+            g.addEdge(v0, v1, new EdgeType(floorAreaSquareMeters));
+            v0 = v1;
+
+            g.addEdge(v0, interiorVertex, new EdgeType(floorAreaSquareMeters));
+
+        }
+
+        return g;
+    }
+
+    // conduction from wall and ceiling, with absorption on the roof top surface
+    public static HeatGraph wallAndCeilingConductionAndSolarAbsorption() {
+        double wallHeightMeters = 2.5;
+        final double floorAreaSquareMeters = 250;
+        double wallAreaSquareMeters = Math.sqrt(floorAreaSquareMeters) * 4 * wallHeightMeters;
+        logger.info("wall area sqm = " + wallAreaSquareMeters);
+        double interiorVolume = floorAreaSquareMeters * wallHeightMeters;
+        final double OATK = 305;
+
+        HeatGraph g = new HeatGraph();
+
+        // outside air; dimensions don't matter
+        VertexType exteriorVertex = new DirichletVertex(Material.AIR_BULK_MIXED, 10, wallAreaSquareMeters,
+                new TemperatureSource() {
+                    @Override
+                    double temperature() {
+                        // a realistic summer temperature
+                        // TODO: variable temperature
+                        return OATK;
+                    }
+
+                });
+        g.addVertex(exteriorVertex);
+
+        // interior volume
+        VertexType interiorVertex = new InternalHeatVertex(Material.AIR_BULK_MIXED, interiorVolume
+                / wallAreaSquareMeters, wallAreaSquareMeters, new InternalHeat() {
+            @Override
+            public double heatWatts() {
+                // steady state, no solar gain, say half a ton?
+                return -1500;
+            }
+
+        });
+        interiorVertex.setTemperature(OATK);
+        g.addVertex(interiorVertex);
+
+        {
+
+            // outside boundary layer for walls
+            VertexType v1 = new UnboundedVertex(Material.AIR_BOUNDARY_LAYER, Material.AIR_BOUNDARY_LAYER_THICKNESS,
+                    wallAreaSquareMeters);
+            v1.setTemperature(OATK);
+            g.addVertex(v1);
+            g.addEdge(exteriorVertex, v1, new EdgeType(wallAreaSquareMeters));
+            VertexType v0 = v1;
+
+            // outside layer of wall
+            v1 = new UnboundedVertex(Material.DOUGLAS_FIR, 0.01, wallAreaSquareMeters);
+            v1.setTemperature(OATK);
+            g.addVertex(v1);
+            g.addEdge(v0, v1, new EdgeType(wallAreaSquareMeters));
+            v0 = v1;
+
+            // insulating part of wall
+            v1 = new UnboundedVertex(Material.STYROFOAM, 0.09, wallAreaSquareMeters * 0.8);
+            // stud part of wall
+            VertexType v2 = new UnboundedVertex(Material.DOUGLAS_FIR, 0.09, wallAreaSquareMeters * 0.2);
+            v1.setTemperature(OATK);
+            v2.setTemperature(OATK);
+            g.addVertex(v1);
+            g.addVertex(v2);
+
+            // edge to foam
+            g.addEdge(v0, v1, new EdgeType(wallAreaSquareMeters * 0.8));
+            // edge to frame
+            g.addEdge(v0, v2, new EdgeType(wallAreaSquareMeters * 0.2));
+
+            // inside layer of wall
+            VertexType v4 = new UnboundedVertex(Material.DOUGLAS_FIR, 0.01, wallAreaSquareMeters);
+            v4.setTemperature(OATK);
+            g.addVertex(v4);
+            // edge from foam
+            g.addEdge(v1, v4, new EdgeType(wallAreaSquareMeters * 0.8));
+            // edge from frame
+            g.addEdge(v2, v4, new EdgeType(wallAreaSquareMeters * 0.2));
+
+            v0 = v4;
+
+            // inside boundary layer for walls
+            v1 = new UnboundedVertex(Material.AIR_BOUNDARY_LAYER, Material.AIR_BOUNDARY_LAYER_THICKNESS,
+                    wallAreaSquareMeters);
+            v1.setTemperature(OATK);
+            g.addVertex(v1);
+            g.addEdge(v0, v1, new EdgeType(wallAreaSquareMeters));
+            v0 = v1;
+
+            g.addEdge(v0, interiorVertex, new EdgeType(wallAreaSquareMeters));
+        }
+
+        // ceiling
+        {
+            // outside boundary layer for roof
+            VertexType v1 = new UnboundedVertex(Material.AIR_BOUNDARY_LAYER, Material.AIR_BOUNDARY_LAYER_THICKNESS,
+                    floorAreaSquareMeters);
+            v1.setTemperature(OATK);
+            g.addVertex(v1);
+            g.addEdge(exteriorVertex, v1, new EdgeType(floorAreaSquareMeters));
+            VertexType v0 = v1;
+
+            // outside layer of ceiling
+            // this is the one that is heated by the sun.
+            // say it's steady state.
+            // say the absorptivity is, mmm, what, 80%?
+            // solar radiation at peak, is, like, 1kw/m2 more or less, direct normal.
+            // so total absorbed radiation is 800 w/m2.
+            //
+            // the model really should take care of everything; conduction both to outside and inside.
+            // maybe the outside air might be better modeled with more nodes?
+            final double insolationWperM2 = 1000;
+            final double absorptivity = 0.8;
+            v1 = new InternalHeatVertex(Material.DOUGLAS_FIR, 0.01, floorAreaSquareMeters, new InternalHeat() {
+                @Override
+                public double heatWatts() {
+                    return insolationWperM2 * absorptivity * floorAreaSquareMeters;
+                }
+            });
             v1.setTemperature(OATK);
             g.addVertex(v1);
             g.addEdge(v0, v1, new EdgeType(floorAreaSquareMeters));
