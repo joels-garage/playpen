@@ -8,6 +8,7 @@ import org.apache.commons.math.ode.nonstiff.AdamsBashforthIntegrator;
 import org.apache.commons.math.ode.sampling.StepHandler;
 import org.apache.commons.math.ode.sampling.StepInterpolator;
 import org.apache.log4j.Logger;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import util.Util;
@@ -115,6 +116,7 @@ public class DiffusiveMediumTest {
     }
 
     @Test
+    @Ignore
     public void testStepSize() throws DerivativeException, IntegratorException {
         final double step = 0.3;
         // works with step 0.3

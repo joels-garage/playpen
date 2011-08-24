@@ -38,11 +38,12 @@ public class ForwardFiniteDifferenceSimulator {
         // TODO: detect nonconvergence
 
         for (int step = 0; step < steps; ++step) {
-            if (step % (Math.round(steps / 100) + 1) == 0)
+            boolean log = (step % (Math.round(steps / 100) + 1) == 0);
+            if (log)
                 logger.info("step: " + step);
             // what's the temp for the next iteration?
             for (VertexType v : g.vertexSet()) {
-                if (step % (Math.round(steps / 100) + 1) == 0)
+                if (log)
                     logger.info("v: " + v);
                 if (v instanceof UnboundedVertex) {
                     Set<EdgeType> edges = g.edgesOf(v);
@@ -56,10 +57,10 @@ public class ForwardFiniteDifferenceSimulator {
                         } else if (target != v) {
                             other = target;
                         } else {
-                            logger.info("skip it, it's a loop.");
+                            logger.trace("skip it, it's a loop.");
                             continue;
                         }
-                        if (logger.isTraceEnabled())
+                        if (log)
                             logger.trace("this: " + v.toString() + " other: " + other.toString());
 
                         // TODO: move these calcs to the graph, since they never change.
@@ -71,7 +72,7 @@ public class ForwardFiniteDifferenceSimulator {
                         double deltaT = other.getTemperature() - v.getTemperature();
                         // q in watts
                         q += deltaT * effectiveK * e.area / myHalfThickness;
-                        if (logger.isTraceEnabled())
+                        if (log)
                             logger.trace("deltaT: " + deltaT + " q: " + q);
                     }
                     if (v instanceof InternalHeatVertex) {
@@ -79,7 +80,7 @@ public class ForwardFiniteDifferenceSimulator {
                     }
 
                     double totalDeltaT = timestepSec * q / v.getNodeHeatCapacity();
-                    if (logger.isTraceEnabled())
+                    if (log)
                         logger.trace("totalDeltaT: " + totalDeltaT + " totalQ: " + q);
 
                     v.setNextTemperature(v.getTemperature() + totalDeltaT);
