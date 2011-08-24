@@ -810,11 +810,16 @@ public class Models {
             floorBoundary.setTemperature(OATK);
             g.addVertex(floorBoundary);
             g.addEdge(interiorVertex, floorBoundary, new EdgeType(floorAreaSquareMeters));
+            
+            VertexType carpet = new UnboundedVertex("carpet", Material.CARPET, 0.02, floorAreaSquareMeters);
+            carpet.setTemperature(OATK);
+            g.addVertex(carpet);
+            g.addEdge(floorBoundary, carpet, new EdgeType(floorAreaSquareMeters));
 
             VertexType slab = new UnboundedVertex("slab", Material.CONCRETE, 0.15, floorAreaSquareMeters);
             slab.setTemperature(OATK);
             g.addVertex(slab);
-            g.addEdge(floorBoundary, slab, new EdgeType(floorAreaSquareMeters));
+            g.addEdge(carpet, slab, new EdgeType(floorAreaSquareMeters));
 
             VertexType previous = slab;
             for (int i = 0; i < 3; ++i) {

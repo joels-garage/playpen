@@ -189,7 +189,11 @@ public class ModelsTest {
     }
     
     /**
-     * oops, now the slab dominates.
+     * oops, now the slab dominates.  adding carpet on top of the slab produces about 1 hour cycles,
+     * which seems right.  i think the slab is still too large an influence, due to stratification,
+     * but whatever, i can add stratification someday.
+     * 
+     * but the duty cycle is still much too high.
      */
     @Test
     public void switchableACWithSlab() {
@@ -205,7 +209,9 @@ public class ModelsTest {
         // first get kinda close to steady state
         s.doit(g, 0.1, 100000, false);
         // this is the control loop
+        int duty = 0;
         for (int i = 0; i < 1440; ++i) {
+            if (ac.on) ++duty; 
             // 0.1 second steps, 600 of them
             double stepSizeSec = 0.1;
             int stepsPerControl = 600;
@@ -221,5 +227,6 @@ public class ModelsTest {
                 // it's somewhere in the deadband, doing whatever it was doing before; leave it alone.
             }
         }
+        logger.info("duty cycle: " + (double) duty / 1440);
     }
 }

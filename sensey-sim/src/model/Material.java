@@ -36,6 +36,8 @@ public class Material {
 
     public static final Material SOIL = new Material("Soil", 3, 1500, 1480);
     public static final Material CONCRETE = new Material("Concrete", 1.7, 2300, 750);
+    public static final Material CARPET = new Material("Carpet", 0.05, 200, 1300);
+    public static final Material SHEETROCK = new Material("Sheetrock", 0.17, 1100, 1090);
 
     public final String name;
     /** thermal conductivity (SI units: W/(m·K)) */
