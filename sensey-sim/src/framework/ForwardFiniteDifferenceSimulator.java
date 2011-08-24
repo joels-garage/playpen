@@ -32,13 +32,17 @@ public class ForwardFiniteDifferenceSimulator {
     private static final Logger logger = Logger.getLogger(ForwardFiniteDifferenceSimulator.class);
 
     public void doit(HeatGraph g, double timestepSec, int steps) {
+        doit(g, timestepSec, steps, true);
+    }
+
+    public void doit(HeatGraph g, double timestepSec, int steps, boolean withLog) {
 
         // traversal order is unimportant, so don't bother with the jgrapht iterators.
         // max time step might depend on alpha?
         // TODO: detect nonconvergence
 
         for (int step = 0; step < steps; ++step) {
-            boolean log = (step % (Math.round(steps / 100) + 1) == 0);
+            boolean log = (step % (Math.round(steps / 100) + 1) == 0) && withLog;
             if (log)
                 logger.info("step: " + step);
             // what's the temp for the next iteration?

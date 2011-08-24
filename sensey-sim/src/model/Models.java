@@ -539,8 +539,27 @@ public class Models {
         return g;
     }
 
+    public static class VertexObserver {
+        VertexType v;
+
+        public VertexType getVertex() {
+            return v;
+        }
+
+        public void setVertex(VertexType v) {
+            this.v = v;
+        }
+    }
+
     // conduction from wall and ceiling, with absorption on the roof top surface
-    public static HeatGraph wallAndCeilingConductionAndSolarAbsorption() {
+    /**
+     * 
+     * @param acOutput
+     * @param vertexObserver for the thermostat to see the right node
+     * @return
+     */
+    public static HeatGraph wallAndCeilingConductionAndSolarAbsorption(final InternalHeat acOutput,
+            VertexObserver vertexObserver) {
         double wallHeightMeters = 2.5;
         final double floorAreaSquareMeters = 250;
         double wallAreaSquareMeters = Math.sqrt(floorAreaSquareMeters) * 4 * wallHeightMeters;
@@ -561,7 +580,6 @@ public class Models {
                         // TODO: variable temperature
                         return OATK;
                     }
-
                 });
         // see http://eetd.lbl.gov/coolroof/ref_01.htm
         VertexType sky = new DirichletVertex("sky", Material.AIR_BULK_MIXED, 10, wallAreaSquareMeters,
@@ -576,7 +594,6 @@ public class Models {
         g.addVertex(exteriorVertex);
         g.addVertex(sky);
 
-
         // solar gains from windows affect the interior node directly.
         // this is not totally realistic, but good enough.
 
@@ -588,11 +605,12 @@ public class Models {
                 / wallAreaSquareMeters, wallAreaSquareMeters, new InternalHeat() {
             @Override
             public double heatWatts() {
-                return -9000 + windowSolarGainWatts;
+                return acOutput.heatWatts() + windowSolarGainWatts;
             }
         });
         interiorVertex.setTemperature(OATK);
         g.addVertex(interiorVertex);
+        vertexObserver.setVertex(interiorVertex);
 
         {
 
@@ -654,7 +672,7 @@ public class Models {
             convection.setTemperature(OATK);
             g.addVertex(convection);
             g.addEdge(exteriorVertex, convection, new EdgeType(floorAreaSquareMeters));
-            
+
             VertexType radiation = new UnboundedVertex("radiation", Material.RADIATION,
                     Material.AIR_BOUNDARY_LAYER_THICKNESS, floorAreaSquareMeters);
             radiation.setTemperature(OATK);
@@ -685,7 +703,8 @@ public class Models {
             g.addEdge(radiation, v0, new EdgeType(floorAreaSquareMeters));
 
             // insulating part of ceiling; really thick
-            VertexType v1 = new UnboundedVertex("ceiling insulation", Material.STYROFOAM, 0.35, floorAreaSquareMeters * 0.9);
+            VertexType v1 = new UnboundedVertex("ceiling insulation", Material.STYROFOAM, 0.35,
+                    floorAreaSquareMeters * 0.9);
             // stud part of wall
             VertexType v2 = new UnboundedVertex("joist", Material.DOUGLAS_FIR, 0.35, floorAreaSquareMeters * 0.1);
             v1.setTemperature(OATK);

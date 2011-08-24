@@ -3,12 +3,16 @@ package model;
 import java.util.Iterator;
 import java.util.Set;
 
+import model.Models.VertexObserver;
+
+import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 
 import framework.ForwardFiniteDifferenceSimulator;
 
 public class ModelsTest {
+    private static final Logger logger = Logger.getLogger(ModelsTest.class);
 
     private void verifyMaxAndMin(double min, double max, HeatGraph g) {
         double myMax = -1e6;
@@ -102,13 +106,27 @@ public class ModelsTest {
         // 295K is about 72F.
         verifyMaxAndMin(295, 305, g);
     }
-    
+
+    public static class SwitchableAC extends InternalHeat {
+        public boolean on = false;
+        private final double output;
+
+        public SwitchableAC(double output) {
+            this.output = output;
+        }
+
+        @Override
+        public double heatWatts() {
+            return on ? output : 0;
+        }
+    }
+
     /**
      * bleah, this is wrong, needs convective loss from the roof.
      * 
      * use a different boundary; 17 w/m2k rather than 5.
      * 
-     * ok, that's not enough.  use radiation.
+     * ok, that's not enough. use radiation.
      * 
      * see http://eetd.lbl.gov/coolroof/ref_01.htm
      * 
@@ -118,15 +136,55 @@ public class ModelsTest {
      * 
      * so, always subtract 61W/m2, all the time, for sky-facing surfaces.
      * 
-     * and also it says that convective loss is 12.4W/m2K, not 17.
+     * and also it says that convective loss is 12.4W/m2K, not 17. TODO: think about that.
      */
     @Test
     public void wallAndCeilingConductionAndSolarAbsorption() {
-        HeatGraph g = Models.wallAndCeilingConductionAndSolarAbsorption();
+        final double acOutput = -9000; // a little under 3 tons
+        SwitchableAC ac = new SwitchableAC(acOutput);
+        ac.on = true;
+        VertexObserver obs = new VertexObserver();
+        HeatGraph g = Models.wallAndCeilingConductionAndSolarAbsorption(ac, obs);
         ForwardFiniteDifferenceSimulator s = new ForwardFiniteDifferenceSimulator();
+        // this isn't actually all the way to steady state.
         s.doit(g, 0.1, 100000);
         // 295K is about 72F.
-        // todo: roof surface temp should be about 350 kelvin, max,  maybe 365 is close enough.
+        // todo: roof surface temp should be about 350 kelvin, max, maybe 365 is close enough.
         verifyMaxAndMin(295, 365, g);
+    }
+
+    @Test
+    public void switchableAC() {
+        // 9kw, 2 K deadband => 20 minute cycle period== too short.
+        // 12kw, 4 K => 22 minute cycles.
+        // ah, the cycle period is dominated by the heat rate of the unconditioned house, which is pretty high!
+        final double setpointHigh = 298;
+        final double setpointLow = 294;
+        final double acOutput = -12000;
+        SwitchableAC ac = new SwitchableAC(acOutput);
+        // start in the on (cooling) state.
+        ac.on = true;
+        VertexObserver obs = new VertexObserver();
+        HeatGraph g = Models.wallAndCeilingConductionAndSolarAbsorption(ac, obs);
+        ForwardFiniteDifferenceSimulator s = new ForwardFiniteDifferenceSimulator();
+        // first get kinda close to steady state
+        s.doit(g, 0.1, 100000, false);
+        // this is the control loop
+        for (int i = 0; i < 1440; ++i) {
+            // 0.1 second steps, 600 of them
+            double stepSizeSec = 0.1;
+            int stepsPerControl = 600;
+            // so control is evaluated once per minute.
+            s.doit(g, stepSizeSec, stepsPerControl, false);
+            double t = obs.getVertex().getTemperature();
+            logger.info(String.format("%5d %8.3f", i, obs.getVertex().getTemperature()));
+            if (t < setpointLow) {
+                ac.on = false;
+            } else if (t > setpointHigh) {
+                ac.on = true;
+            } else {
+                // it's somewhere in the deadband, doing whatever it was doing before; leave it alone.
+            }
+        }
     }
 }
