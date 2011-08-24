@@ -193,7 +193,8 @@ public class ModelsTest {
      * which seems right.  i think the slab is still too large an influence, due to stratification,
      * but whatever, i can add stratification someday.
      * 
-     * but the duty cycle is still much too high.
+     * but the duty cycle is still much too high, 86%, because the heat rate is still very high,
+     * probably due to low shell mass; add something conductive and massive.
      */
     @Test
     public void switchableACWithSlab() {
