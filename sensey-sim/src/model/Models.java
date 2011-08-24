@@ -352,7 +352,6 @@ public class Models {
         g.addVertex(inside);
 
         g.addEdge(outside, infiltration, new EdgeType(wallAreaSquareMeters));
-
         g.addEdge(infiltration, inside, new EdgeType(wallAreaSquareMeters));
         return g;
     }
@@ -379,23 +378,43 @@ public class Models {
                     }
 
                 });
-        g.addVertex(exteriorVertex);
 
         // interior volume
         VertexType interiorVertex = new InternalHeatVertex(Material.AIR_BULK_MIXED, interiorVolume
                 / wallAreaSquareMeters, wallAreaSquareMeters, new InternalHeat() {
             @Override
             public double heatWatts() {
-                // steady state, no solar gain, say half a ton?
-                return -1500;
+                // steady state, no solar gain, say a little less than a ton?
+                return -3000;
             }
 
         });
         interiorVertex.setTemperature(OATK);
+
+        g.addVertex(exteriorVertex);
         g.addVertex(interiorVertex);
 
         {
+            // TODO: extract these to an infiltration type
+            double thickness = 0.1; // meaningless
+            double ACH = 0.5; // wild guess
+            double airChangesPerSecond = ACH / 3600;
+            double cubicMetersPerSecond = airChangesPerSecond * interiorVolume;
+            double wattsPerKelvin = cubicMetersPerSecond * Material.AIR_BULK_MIXED.getVolumetricHeatCapacity();
+            double effectiveK = thickness * wattsPerKelvin / wallAreaSquareMeters;
+            Material infiltrationMaterial = new Material("infiltration", effectiveK, Material.AIR_BULK_MIXED.rho,
+                    Material.AIR_BULK_MIXED.cp);
 
+            // infiltration layer
+            VertexType infiltration = new UnboundedVertex(infiltrationMaterial, thickness, wallAreaSquareMeters);
+            infiltration.setTemperature(OATK);
+            g.addVertex(infiltration);
+
+            g.addEdge(exteriorVertex, infiltration, new EdgeType(wallAreaSquareMeters));
+            g.addEdge(infiltration, interiorVertex, new EdgeType(wallAreaSquareMeters));
+        }
+
+        {
             // outside boundary layer for walls
             VertexType v1 = new UnboundedVertex(Material.AIR_BOUNDARY_LAYER, Material.AIR_BOUNDARY_LAYER_THICKNESS,
                     wallAreaSquareMeters);

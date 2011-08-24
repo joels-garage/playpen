@@ -48,7 +48,7 @@ public abstract class VertexType {
     public double getVolume() {
         return area * thickness;
     }
-    
+
     public double getHalfThickness() {
         return thickness / 2;
     }
@@ -66,12 +66,11 @@ public abstract class VertexType {
     /** W/K */
     public double getConductance() {
         return material.k * area / thickness;
-
     }
 
     @Override
     public String toString() {
-        return String.format("class: %20s material: %20s thickness: %4.3f temperature: %12.6f", getClass()
+        return String.format("class: %20s material: %20s thickness: %6.3f temperature: %12.6f", getClass()
                 .getSimpleName(), material, thickness, getTemperature());
     }
 }

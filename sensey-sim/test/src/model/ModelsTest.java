@@ -9,6 +9,23 @@ import org.junit.Test;
 import framework.ForwardFiniteDifferenceSimulator;
 
 public class ModelsTest {
+
+    private void verifyMaxAndMin(double min, double max, HeatGraph g) {
+        double myMax = -1e6;
+        double myMin = 1e6;
+        Set<VertexType> v = g.vertexSet();
+        Iterator<VertexType> iter = v.iterator();
+        while (iter.hasNext()) {
+            double val = iter.next().getTemperature();
+            if (val > myMax)
+                myMax = val;
+            if (val < myMin)
+                myMin = val;
+        }
+        Assert.assertEquals(max, myMax, 1);
+        Assert.assertEquals(min, myMin, 1);
+    }
+
     /**
      * random house model i started with
      */
@@ -16,9 +33,8 @@ public class ModelsTest {
     public void firstHouse() {
         HeatGraph g = Models.firstHouse();
         ForwardFiniteDifferenceSimulator s = new ForwardFiniteDifferenceSimulator();
-        s.doit(g, 0.001, 500000);
-        // once we're in a near-solution state, is the convergence issue still that bad? yes it is.
-        s.doit(g, 1, 50);
+        s.doit(g, 1, 200000);
+        verifyMaxAndMin(0, 40, g);
     }
 
     /**
@@ -28,21 +44,23 @@ public class ModelsTest {
     public void wallOnly() {
         HeatGraph g = Models.wallOnly();
         ForwardFiniteDifferenceSimulator s = new ForwardFiniteDifferenceSimulator();
-        s.doit(g, 1, 500000);
+        s.doit(g, 1, 200000);
+        verifyMaxAndMin(284, 305, g);
     }
 
     /**
-     * TODO: make this work with a larger step.
+     * 
      */
     @Test
     public void wallAndCeilingConductionOnly() {
         HeatGraph g = Models.wallAndCeilingConductionOnly();
         ForwardFiniteDifferenceSimulator s = new ForwardFiniteDifferenceSimulator();
-        s.doit(g, 1, 500000);
+        s.doit(g, 1, 100000);
+        verifyMaxAndMin(297, 305, g);
     }
 
     /**
-     * infiltration is a TINY effect.  ?
+     * about 1 ton, 28 Kelvin of delta T. that's kind of high, but whatever, close enough.
      */
     @Test
     public void infiltrationOnly() {
@@ -67,6 +85,22 @@ public class ModelsTest {
         double wattsPerKelvin = 1006 * 1.225 * m3PerSec;
         double watts = 3000;
         double deltaTKelvin = watts / wattsPerKelvin;
+        Assert.assertEquals(28, deltaTKelvin, 1);
         Assert.assertEquals(deltaTKelvin, x - z, 1);
+        verifyMaxAndMin(276, 305, g);
     }
+
+    /**
+     *
+     */
+    @Test
+    public void wallAndCeilingConductionAndInfiltration() {
+        // this model includes 3kw of cooling output
+        HeatGraph g = Models.wallAndCeilingConductionAndInfiltration();
+        ForwardFiniteDifferenceSimulator s = new ForwardFiniteDifferenceSimulator();
+        s.doit(g, 1, 100000);
+        // 295K is about 72F.
+        verifyMaxAndMin(295, 305, g);
+    }
+
 }
