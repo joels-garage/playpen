@@ -187,32 +187,43 @@ public class ModelsTest {
             }
         }
     }
-    
+
     /**
-     * oops, now the slab dominates.  adding carpet on top of the slab produces about 1 hour cycles,
-     * which seems right.  i think the slab is still too large an influence, due to stratification,
-     * but whatever, i can add stratification someday.
+     * oops, now the slab dominates. adding carpet on top of the slab produces about 1 hour cycles, which seems right. i
+     * think the slab is still too large an influence, due to stratification, but whatever, i can add stratification
+     * someday.
      * 
-     * but the duty cycle is still much too high, 86%, because the heat rate is still very high,
-     * probably due to low shell mass; add something conductive and massive.
+     * but the duty cycle is still much too high, 86%, because the heat rate is still very high, probably due to low
+     * shell mass; add something conductive and massive.
      */
     @Test
     public void switchableACWithSlab() {
         final double setpointHigh = 298;
         final double setpointLow = 294;
+        final double setpointOffset = 2;
+        //final double acOutput = -8000; // 2.3 tons, good for 90F
         final double acOutput = -12000;
+        // final double acOutput = -12000; // 3 tons, not quite enough for 105F
         SwitchableAC ac = new SwitchableAC(acOutput);
         // start in the on (cooling) state.
         ac.on = true;
         VertexObserver obs = new VertexObserver();
-        HeatGraph g = Models.wallAndCeilingAndFloorConductionAndSolarAbsorption(ac, obs);
+        //double outsideAirTempK = 305; // 90F
+        double outsideAirTempK = 313;
+        // double outsideAirTempK = 313; // 105F
+
+        HeatGraph g = Models.wallAndCeilingAndFloorConductionAndSolarAbsorption(ac, obs, outsideAirTempK);
         ForwardFiniteDifferenceSimulator s = new ForwardFiniteDifferenceSimulator();
         // first get kinda close to steady state
         s.doit(g, 0.1, 100000, false);
         // this is the control loop
         int duty = 0;
+        double power[] = new double[1440];
         for (int i = 0; i < 1440; ++i) {
-            if (ac.on) ++duty; 
+            if (ac.on) {
+                power[i] = acOutput;
+                ++duty;
+            }
             // 0.1 second steps, 600 of them
             double stepSizeSec = 0.1;
             int stepsPerControl = 600;
@@ -220,14 +231,49 @@ public class ModelsTest {
             s.doit(g, stepSizeSec, stepsPerControl, false);
             double t = obs.getVertex().getTemperature();
             logger.info(String.format("%5d %8.3f", i, obs.getVertex().getTemperature()));
-            if (t < setpointLow) {
-                ac.on = false;
-            } else if (t > setpointHigh) {
-                ac.on = true;
+
+            if (i > 600 && i < 720) {
+                // precool for 2 hours
+                if (t < setpointLow - setpointOffset) {
+                    ac.on = false;
+                } else if (t > setpointHigh - setpointOffset) {
+                    ac.on = true;
+                } else {
+                    // it's somewhere in the deadband, doing whatever it was doing before; leave it alone.
+                    continue;
+                }
+            } else if (i >= 720 && i < 840) {
+                // overheat
+                if (t < setpointLow + setpointOffset) {
+                    ac.on = false;
+                } else if (t > setpointHigh + setpointOffset) {
+                    ac.on = true;
+                } else {
+                    // it's somewhere in the deadband, doing whatever it was doing before; leave it alone.
+                    continue;
+                }
             } else {
-                // it's somewhere in the deadband, doing whatever it was doing before; leave it alone.
+                if (t < setpointLow) {
+                    ac.on = false;
+                } else if (t > setpointHigh) {
+                    ac.on = true;
+                } else {
+                    // it's somewhere in the deadband, doing whatever it was doing before; leave it alone.
+                    continue;
+                }
             }
+            // spit out the temps  at mode switches so we can see what's up
+            //s.doit(g, 0.1, 1, true);
         }
+        // just to spit out the final temperatures
+        s.doit(g, 0.1, 1, true);
         logger.info("duty cycle: " + (double) duty / 1440);
+        for (int i = 0; i < 24; ++i) {
+            double powerByHour = 0;
+            for (int j = 0; j < 60; ++j) {
+                powerByHour += power[j + i * 60] / (60 * 1000);
+            }
+            logger.info("hour: " + i + " kwh: " + powerByHour);
+        }
     }
 }

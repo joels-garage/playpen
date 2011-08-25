@@ -749,16 +749,17 @@ public class Models {
      * @param acOutput
      * @param vertexObserver
      *            for the thermostat to see the right node
+     * @param OATK
+     *            outside air temperature, kelvin
      * @return
      */
     public static HeatGraph wallAndCeilingAndFloorConductionAndSolarAbsorption(final InternalHeat acOutput,
-            VertexObserver vertexObserver) {
+            VertexObserver vertexObserver, final double OATK) {
         double wallHeightMeters = 2.5;
         final double floorAreaSquareMeters = 250;
         double wallAreaSquareMeters = Math.sqrt(floorAreaSquareMeters) * 4 * wallHeightMeters;
         logger.info("wall area sqm = " + wallAreaSquareMeters);
         double interiorVolume = floorAreaSquareMeters * wallHeightMeters;
-        final double OATK = 305;
 
         final double insolationWperM2 = 1000;
 
@@ -804,27 +805,31 @@ public class Models {
         interiorVertex.setTemperature(OATK);
         g.addVertex(interiorVertex);
         vertexObserver.setVertex(interiorVertex);
+ 
         {
             VertexType floorBoundary = new UnboundedVertex("floor boundary", Material.AIR_BOUNDARY_LAYER,
                     Material.AIR_BOUNDARY_LAYER_THICKNESS, floorAreaSquareMeters);
             floorBoundary.setTemperature(OATK);
             g.addVertex(floorBoundary);
             g.addEdge(interiorVertex, floorBoundary, new EdgeType(floorAreaSquareMeters));
-            
-            VertexType carpet = new UnboundedVertex("carpet", Material.CARPET, 0.02, floorAreaSquareMeters);
+
+            // slab is too influential; insulate it for now
+            VertexType carpet = new UnboundedVertex("carpet", Material.CARPET, 0.03, floorAreaSquareMeters);
             carpet.setTemperature(OATK);
             g.addVertex(carpet);
             g.addEdge(floorBoundary, carpet, new EdgeType(floorAreaSquareMeters));
 
-            VertexType slab = new UnboundedVertex("slab", Material.CONCRETE, 0.15, floorAreaSquareMeters);
-            slab.setTemperature(OATK);
+            VertexType slab = new UnboundedVertex("slab", Material.CONCRETE, 0.10, floorAreaSquareMeters);
+            slab.setTemperature(295);
             g.addVertex(slab);
             g.addEdge(carpet, slab, new EdgeType(floorAreaSquareMeters));
 
+            final double soilTemp = 286;
+            // roughly the average soil temp
             VertexType previous = slab;
             for (int i = 0; i < 3; ++i) {
-                VertexType earth = new UnboundedVertex("soil", Material.SOIL, 0.5, floorAreaSquareMeters);
-                earth.setTemperature(OATK);
+                VertexType earth = new UnboundedVertex("soil", Material.SOIL, 0.01, floorAreaSquareMeters);
+                earth.setTemperature(soilTemp);
                 g.addVertex(earth);
                 g.addEdge(previous, earth, new EdgeType(floorAreaSquareMeters));
                 previous = earth;
@@ -834,14 +839,15 @@ public class Models {
                     new TemperatureSource() {
                         @Override
                         double temperature() {
-                            // TODO: is this right? make it variable?
-                            return 286;
+                            // TODO: make it variable
+                            return soilTemp;
                         }
                     });
             g.addVertex(deepEarth);
             g.addEdge(previous, deepEarth, new EdgeType(floorAreaSquareMeters));
 
         }
+        
         {
 
             // outside boundary layer for walls
@@ -853,7 +859,7 @@ public class Models {
             VertexType v0 = v1;
 
             // outside layer of wall
-            v1 = new UnboundedVertex("sheathing", Material.DOUGLAS_FIR, 0.01, wallAreaSquareMeters);
+            v1 = new UnboundedVertex("sheathing", Material.DOUGLAS_FIR, 0.015, wallAreaSquareMeters);
             v1.setTemperature(OATK);
             g.addVertex(v1);
             g.addEdge(v0, v1, new EdgeType(wallAreaSquareMeters));
@@ -874,7 +880,7 @@ public class Models {
             g.addEdge(v0, v2, new EdgeType(wallAreaSquareMeters * 0.2));
 
             // inside layer of wall
-            VertexType v4 = new UnboundedVertex("wall paneling", Material.DOUGLAS_FIR, 0.01, wallAreaSquareMeters);
+            VertexType v4 = new UnboundedVertex("wall sheetrock", Material.SHEETROCK, 0.015, wallAreaSquareMeters);
             v4.setTemperature(OATK);
             g.addVertex(v4);
             // edge from foam
@@ -948,7 +954,7 @@ public class Models {
             g.addEdge(v0, v2, new EdgeType(floorAreaSquareMeters * 0.1));
 
             // inside layer of wall
-            VertexType v4 = new UnboundedVertex("ceiling paneling", Material.DOUGLAS_FIR, 0.01, floorAreaSquareMeters);
+            VertexType v4 = new UnboundedVertex("ceiling sheetrock", Material.SHEETROCK, 0.015, floorAreaSquareMeters);
             v4.setTemperature(OATK);
             g.addVertex(v4);
             // edge from foam
