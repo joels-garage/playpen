@@ -12,8 +12,7 @@ public class Models {
         double thicknessMeters = 0.01;
         VertexType v0 = new DirichletVertex("v0", Material.DOUGLAS_FIR, thicknessMeters, areaSquareMeters,
                 new TemperatureSource() {
-                    @Override
-                    double temperature() {
+                    public double temperature() {
                         return 0.0;
                     }
 
@@ -81,8 +80,7 @@ public class Models {
         // outside air; dimensions don't matter
         VertexType v0 = new DirichletVertex("outside air", Material.AIR_BULK_MIXED, 10, wallAreaSquareMeters,
                 new TemperatureSource() {
-                    @Override
-                    double temperature() {
+                    public double temperature() {
                         // a realistic summer temperature
                         // TODO: variable temperature
                         return OATK;
@@ -169,8 +167,7 @@ public class Models {
         // outside air; dimensions don't matter
         VertexType exteriorVertex = new DirichletVertex("outside air", Material.AIR_BULK_MIXED, 10,
                 wallAreaSquareMeters, new TemperatureSource() {
-                    @Override
-                    double temperature() {
+                    public double temperature() {
                         // a realistic summer temperature
                         // TODO: variable temperature
                         return OATK;
@@ -182,7 +179,6 @@ public class Models {
         // interior volume
         VertexType interiorVertex = new InternalHeatVertex("interior volume", Material.AIR_BULK_MIXED, interiorVolume
                 / wallAreaSquareMeters, wallAreaSquareMeters, new InternalHeat() {
-            @Override
             public double heatWatts() {
                 // steady state, no solar gain, say half a ton?
                 return -1500;
@@ -326,8 +322,7 @@ public class Models {
         // outside air; dimensions don't matter
         VertexType outside = new DirichletVertex("outside air", Material.AIR_BULK_MIXED, 10, wallAreaSquareMeters,
                 new TemperatureSource() {
-                    @Override
-                    double temperature() {
+                    public double temperature() {
                         // a realistic summer temperature
                         // TODO: variable temperature
                         return OATK;
@@ -344,7 +339,6 @@ public class Models {
         // interior volume
         VertexType inside = new InternalHeatVertex("interior volume", Material.AIR_BULK_MIXED, interiorVolume
                 / wallAreaSquareMeters, wallAreaSquareMeters, new InternalHeat() {
-            @Override
             public double heatWatts() {
                 // about one ton
                 return -3000;
@@ -372,8 +366,7 @@ public class Models {
         // outside air; dimensions don't matter
         VertexType exteriorVertex = new DirichletVertex("outside air", Material.AIR_BULK_MIXED, 10,
                 wallAreaSquareMeters, new TemperatureSource() {
-                    @Override
-                    double temperature() {
+                    public double temperature() {
                         // a realistic summer temperature
                         // TODO: variable temperature
                         return OATK;
@@ -382,8 +375,7 @@ public class Models {
         // see http://eetd.lbl.gov/coolroof/ref_01.htm
         VertexType sky = new DirichletVertex("sky", Material.AIR_BULK_MIXED, 10, wallAreaSquareMeters,
                 new TemperatureSource() {
-                    @Override
-                    double temperature() {
+                    public double temperature() {
                         // a realistic summer temperature
                         // TODO: variable temperature
                         return OATK - 10;
@@ -575,8 +567,7 @@ public class Models {
         // outside air; dimensions don't matter
         VertexType exteriorVertex = new DirichletVertex("outside air", Material.AIR_BULK_MIXED, 10,
                 wallAreaSquareMeters, new TemperatureSource() {
-                    @Override
-                    double temperature() {
+                    public double temperature() {
                         // a realistic summer temperature
                         // TODO: variable temperature
                         return OATK;
@@ -585,8 +576,7 @@ public class Models {
         // see http://eetd.lbl.gov/coolroof/ref_01.htm
         VertexType sky = new DirichletVertex("sky", Material.AIR_BULK_MIXED, 10, wallAreaSquareMeters,
                 new TemperatureSource() {
-                    @Override
-                    double temperature() {
+                    public double temperature() {
                         // a realistic summer temperature
                         // TODO: variable temperature
                         return OATK - 10;
@@ -768,8 +758,7 @@ public class Models {
         // outside air; dimensions don't matter
         VertexType exteriorVertex = new DirichletVertex("outside air", Material.AIR_BULK_MIXED, 10,
                 wallAreaSquareMeters, new TemperatureSource() {
-                    @Override
-                    double temperature() {
+                    public double temperature() {
                         // a realistic summer temperature
                         // TODO: variable temperature
                         return OATK;
@@ -778,8 +767,7 @@ public class Models {
         // see http://eetd.lbl.gov/coolroof/ref_01.htm
         VertexType sky = new DirichletVertex("sky", Material.AIR_BULK_MIXED, 10, wallAreaSquareMeters,
                 new TemperatureSource() {
-                    @Override
-                    double temperature() {
+                    public double temperature() {
                         // a realistic summer temperature
                         // TODO: variable temperature
                         return OATK - 10;
@@ -805,7 +793,7 @@ public class Models {
         interiorVertex.setTemperature(OATK);
         g.addVertex(interiorVertex);
         vertexObserver.setVertex(interiorVertex);
- 
+
         {
             VertexType floorBoundary = new UnboundedVertex("floor boundary", Material.AIR_BOUNDARY_LAYER,
                     Material.AIR_BOUNDARY_LAYER_THICKNESS, floorAreaSquareMeters);
@@ -837,8 +825,7 @@ public class Models {
 
             VertexType deepEarth = new DirichletVertex("deep soil", Material.SOIL, 10, floorAreaSquareMeters,
                     new TemperatureSource() {
-                        @Override
-                        double temperature() {
+                        public double temperature() {
                             // TODO: make it variable
                             return soilTemp;
                         }
@@ -847,7 +834,7 @@ public class Models {
             g.addEdge(previous, deepEarth, new EdgeType(floorAreaSquareMeters));
 
         }
-        
+
         {
 
             // outside boundary layer for walls

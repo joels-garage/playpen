@@ -104,10 +104,10 @@ public class ModelsTest {
         ForwardFiniteDifferenceSimulator s = new ForwardFiniteDifferenceSimulator();
         s.doit(g, 1, 100000);
         // 295K is about 72F.
-        verifyMaxAndMin(295, 305, g);
+        verifyMaxAndMin(293, 305, g);
     }
 
-    public static class SwitchableAC extends InternalHeat {
+    public static class SwitchableAC implements InternalHeat {
         public boolean on = false;
         private final double output;
 
@@ -115,7 +115,6 @@ public class ModelsTest {
             this.output = output;
         }
 
-        @Override
         public double heatWatts() {
             return on ? output : 0;
         }

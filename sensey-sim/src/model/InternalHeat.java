@@ -7,8 +7,6 @@ package model;
  * 
  * TODO: attach this to an equipment model, i.e. a thermostat, a capacity.
  */
-public class InternalHeat {
-    public double heatWatts() {
-        return 1;
-    }
+public interface InternalHeat {
+    double heatWatts();
 }
